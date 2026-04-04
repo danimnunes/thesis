@@ -1,0 +1,7 @@
+{
+  "name": "@ebsiint-api/trusted-apps-registry-api-v4",
+  "private": true,
+  "version": "4.0.0-rc.4",
+  "type": "module",
+  "license": "EUPL-1.2"
+}

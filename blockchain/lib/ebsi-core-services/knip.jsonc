@@ -1,0 +1,142 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "tags": ["-lintignore"],
+  "workspaces": {
+    // Root workspace
+    ".": {
+      "entry": ["scripts/*.mjs"],
+      "ignoreDependencies": [
+        "@changesets/cli",
+        "@nx/workspace",
+        "@scaleway/changesets-renovate",
+        "@stoplight/spectral-cli",
+        "syncpack",
+      ],
+    },
+
+    // APIs
+    "apis/*": {
+      "entry": ["src/main.ts", "tests/k6/script.js"],
+    },
+    // Shared
+    "apis/shared": {
+      "entry": [], // Use default pattern
+    },
+    // Deprecated APIs (no entry point)
+    "apis/authorisation": {},
+    "apis/authorisation-v3": {},
+    "apis/did-registry": {},
+    "apis/did-registry-v3": {},
+    "apis/did-registry-v4": {},
+    "apis/ledger": {},
+    "apis/timestamp": {},
+    "apis/trusted-apps-registry": {},
+    "apis/trusted-apps-registry-v4": {},
+    "apis/trusted-issuers-registry": {},
+    "apis/trusted-issuers-registry-v4": {},
+    "apis/trusted-policies-registry": {},
+    "apis/trusted-schemas-registry": {},
+
+    // Contracts
+    "contracts/*": {
+      "entry": [
+        ".solcover.js",
+        ".solhintrc.js",
+        "scripts/*.ts",
+        "tests/*.{test,spec}.ts",
+      ],
+      "ignoreDependencies": [
+        "@ebsiint-sc/.+",
+        "@openzeppelin/.+",
+        "@types/mocha",
+      ],
+    },
+    // Admin scripts contains scripts
+    "contracts/admin-scripts": {
+      "entry": [
+        ".solhintrc.js",
+        "hardhat.config.compiler.ts",
+        "scripts/**/*.ts",
+      ],
+      "ignoreBinaries": ["scripts\/.*.sh"],
+      "ignoreDependencies": ["@ebsiint-sc/.+", "@openzeppelin/.+"],
+    },
+    // Bootstrap SC v2 doesn't have tests
+    "contracts/bootstrap-v2": {
+      "entry": [".solhintrc.js"],
+      "ignoreDependencies": ["@openzeppelin/.+", "@types/mocha"],
+    },
+    // The following contracts don't have scripts
+    "contracts/beacon-proxy": {
+      "entry": [".solcover.js", ".solhintrc.js", "tests/*.{test,spec}.ts"],
+      "ignoreDependencies": ["@openzeppelin/.+", "@types/mocha"],
+    },
+    "contracts/deuss": {
+      "entry": [".solcover.js", ".solhintrc.js", "tests/*.{test,spec}.ts"],
+      "ignoreDependencies": [
+        "@ebsiint-sc/.+",
+        "@openzeppelin/.+",
+        "@types/mocha",
+        "solady",
+      ],
+    },
+    "contracts/proxy": {
+      "entry": [".solcover.js", ".solhintrc.js", "tests/*.{test,spec}.ts"],
+      "ignoreDependencies": ["@ebsiint-sc/.+", "@types/mocha"],
+    },
+    "contracts/track-and-trace": {
+      "entry": [".solcover.js", ".solhintrc.js", "tests/*.{test,spec}.ts"],
+      "ignoreDependencies": [
+        "@ebsiint-sc/.+",
+        "@openzeppelin/.+",
+        "@types/mocha",
+      ],
+    },
+    "contracts/trusted-schemas-registry-v3": {
+      "entry": [".solcover.js", ".solhintrc.js", "tests/*.{test,spec}.ts"],
+      "ignoreDependencies": [
+        "@ebsiint-sc/.+",
+        "@openzeppelin/.+",
+        "@types/mocha",
+      ],
+    },
+
+    // Deprecated contracts
+    "contracts/bootstrap": {},
+    "contracts/did-registry": {},
+    "contracts/did-registry-v2": {},
+    "contracts/did-registry-v3": {},
+    "contracts/timestamp": {},
+    "contracts/timestamp-v2": {},
+    "contracts/trusted-apps-registry": {},
+    "contracts/trusted-apps-registry-v3": {},
+    "contracts/trusted-issuers-registry": {},
+    "contracts/trusted-issuers-registry-v3": {},
+    "contracts/trusted-policies-registry": {},
+    "contracts/trusted-policies-registry-v2": {},
+    "contracts/trusted-schemas-registry": {},
+    "contracts/trusted-schemas-registry-v2": {},
+
+    // Subgraphs
+    "subgraphs/core-services": {
+      "entry": ["src/**/mappings.ts", "scripts/*.mjs", "tests/*.test.ts"],
+      "ignoreDependencies": [
+        "@ebsiint-sc/.+",
+        "assemblyscript-json",
+        "binaryen",
+      ],
+    },
+    "subgraphs/estat": {
+      "entry": ["src/**/mappings.ts", "scripts/*.mjs", "tests/*.test.ts"],
+      "ignoreDependencies": [
+        "@ebsiint-sc/track-and-trace",
+        "assemblyscript-json",
+        "binaryen",
+      ],
+    },
+    // Deployer
+    "subgraphs/deployer": {
+      "ignoreDependencies": ["@ebsiint-subgraph/.+"],
+    },
+  },
+}

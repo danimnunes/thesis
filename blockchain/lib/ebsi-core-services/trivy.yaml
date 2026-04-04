@@ -1,0 +1,4 @@
+scan:
+  skip-dirs:
+    # Ignore npm's dependencies
+    - /usr/local/lib/node_modules/npm/node_modules

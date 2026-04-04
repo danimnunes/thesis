@@ -1,0 +1,885 @@
+openapi: 3.1.0
+info:
+  title: DID Registry API v5
+  description: |
+    The DID Registry (DIDR) is an EBSI core service providing the capabilities of registering, managing and resolving EBSI Decentralised Identifiers (DIDs) of the did:ebsi DID method.
+
+    It enables consumers to interact with the DID Registry Smart Contract to:
+    - Insert a DID/DID document
+    - Update a DID document
+    - Add a service
+    - Revoke a service
+    - Revoke a DID/DID Controlling keys
+    - Resolve a DID (and obtain a DID document)
+
+    For more information see:
+    * [How to register a DID document](https://hub.ebsi.eu/vc-framework/guidelines/didr)
+    * [CLI Tool page](https://hub.ebsi.eu/tools/cli): Test the capabilities using the EBSI CLI tool
+  version: 5.0.0
+  contact:
+    name: EBSI Support - Service Desk
+    url: https://ec.europa.eu/digital-building-blocks/tracker/plugins/servlet/desk/portal/11
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/page/eupl-text-11-12
+paths:
+  /did-registry/v5/identifiers:
+    get:
+      tags:
+        - DID documents
+      summary: List identifiers
+      description: Returns a list of identifiers.
+      operationId: get-identifiers
+      parameters:
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+          schema:
+            type: integer
+        - in: query
+          name: controller
+          description: Filter by controller DID.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: Absolute path to the collection (consult)
+                  items:
+                    type: array
+                    description: List of identifiers
+                    items:
+                      type: object
+                      properties:
+                        did:
+                          type: string
+                          description: A unique record id = DID User
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items across all pages.
+                  pageSize:
+                    type: integer
+                    description: |
+                      Maximum number of items per page. For the last page, its value should be
+                      independent of the number of actually returned items.
+                  links:
+                    $ref: "#/components/schemas/Links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/did-registry/v5/identifiers?page[after]=1&page[size]=10
+                    items:
+                      - did: did:ebsi:zxAFkP2dnB5oL2A5iaaK5K3
+                        href: https://api-pilot.ebsi.eu/did-registry/v5/identifiers/did:ebsi:zxAFkP2dnB5oL2A5iaaK5K3
+                      - did: did:ebsi:zz5f4mD24zdq5rAshHd9R57
+                        href: https://api-pilot.ebsi.eu/did-registry/v5/identifiers/did:ebsi:zz5f4mD24zdq5rAshHd9R57
+                      - did: did:ebsi:zgUB1p2zNmGtymUwzHrxh24
+                        href: https://api-pilot.ebsi.eu/did-registry/v5/identifiers/did:ebsi:zgUB1p2zNmGtymUwzHrxh24
+                      - did: did:ebsi:zjCwFPzJgv1dk42v9MsRahg
+                        href: https://api-pilot.ebsi.eu/did-registry/v5/identifiers/did:ebsi:zjCwFPzJgv1dk42v9MsRahg
+                      - did: did:ebsi:z23S8YPCtw4XYdTPJKJdxYRP
+                        href: https://api-pilot.ebsi.eu/did-registry/v5/identifiers/did:ebsi:z23S8YPCtw4XYdTPJKJdxYRP
+                      - did: did:ebsi:zZ91pGjbnuQmEf3RJfi5K1t
+                        href: https://api-pilot.ebsi.eu/did-registry/v5/identifiers/did:ebsi:zZ91pGjbnuQmEf3RJfi5K1t
+                      - did: did:ebsi:ztnQABC7mzp2yUq2uzLYEqJ
+                        href: https://api-pilot.ebsi.eu/did-registry/v5/identifiers/did:ebsi:ztnQABC7mzp2yUq2uzLYEqJ
+                      - did: did:ebsi:zdGrPkuKPmQ1QuATyoTCqVQ
+                        href: https://api-pilot.ebsi.eu/did-registry/v5/identifiers/did:ebsi:zdGrPkuKPmQ1QuATyoTCqVQ
+                      - did: did:ebsi:zgEQpSQLSKoKG6dES7ab5xn
+                        href: https://api-pilot.ebsi.eu/did-registry/v5/identifiers/did:ebsi:zgEQpSQLSKoKG6dES7ab5xn
+                      - did: did:ebsi:zgUB1p2zNmGtymUwzHrxh24
+                        href: https://api-pilot.ebsi.eu/did-registry/v5/identifiers/did:ebsi:zgUB1p2zNmGtymUwzHrxh24
+                    total: 98
+                    pageSize: 10
+                    links:
+                      first: https://api-pilot.ebsi.eu/did-registry/v5/identifiers?page[after]=1&page[size]=10
+                      prev: https://api-pilot.ebsi.eu/did-registry/v5/identifiers?page[after]=1&page[size]=10
+                      next: https://api-pilot.ebsi.eu/did-registry/v5/identifiers?page[after]=2&page[size]=10
+                      last: https://api-pilot.ebsi.eu/did-registry/v5/identifiers?page[after]=10&page[size]=10
+                Filter by controller:
+                  value:
+                    self: https://api-pilot.ebsi.eu/did-registry/v5/identifiers?page[after]=1&page[size]=10&controller=did:ebsi:z23ETkVyJGeLWysGD11s2Jof
+                    items:
+                      - did: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                        href: https://api-pilot.ebsi.eu/did-registry/v5/identifiers/did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                    total: 1
+                    pageSize: 10
+                    links:
+                      first: https://api-pilot.ebsi.eu/did-registry/v5/identifiers?page[after]=1&page[size]=10&controller=0x2430ec99974524fA4133a7456e8a1C8533B36f0f
+                      prev: https://api-pilot.ebsi.eu/did-registry/v5/identifiers?page[after]=1&page[size]=10&controller=0x2430ec99974524fA4133a7456e8a1C8533B36f0f
+                      next: https://api-pilot.ebsi.eu/did-registry/v5/identifiers?page[after]=1&page[size]=10&controller=0x2430ec99974524fA4133a7456e8a1C8533B36f0f
+                      last: https://api-pilot.ebsi.eu/did-registry/v5/identifiers?page[after]=1&page[size]=10&controller=0x2430ec99974524fA4133a7456e8a1C8533B36f0f
+        "400":
+          description: Bad Request Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: PageSize should not be greater than 50
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /did-registry/v5/identifiers/{did}:
+    get:
+      tags:
+        - DID documents
+      summary: Get a DID document
+      description: Returns the DID document corresponding to the DID.
+      operationId: get-identifier
+      parameters:
+        - in: path
+          name: did
+          description: A DID to be resolved.
+          required: true
+          schema:
+            type: string
+          examples:
+            DID:
+              value: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+        - in: query
+          name: valid-at
+          description: |
+            This option is used to get a the version in the past
+            of a DID document. It must be a date in ISO-8601 format
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success. A user wallet gets DID resolution.
+          content:
+            application/did+ld+json:
+              schema:
+                $ref: "#/components/schemas/DIDDocument"
+              examples:
+                Success:
+                  value:
+                    "@context":
+                      - https://www.w3.org/ns/did/v1
+                      - https://w3id.org/security/suites/jws-2020/v1
+                    id: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                    controller:
+                      - did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                    verificationMethod:
+                      - id: did:ebsi:zZeKyEJfUTGwajhNyNX928z#RqnJsdrEXgSMJgCdlxFGya2oLmVEP1zz0Jo-VMFqq6E
+                        type: JsonWebKey2020
+                        controller: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                        publicKeyJwk:
+                          kty: EC
+                          crv: secp256k1
+                          x: wBmAchcZfv7IIWzLdSPysdT_33r02KH18nJM_r01pig
+                          y: MABWTgJIKuObHLi8G8ta_OoUpqwBShoKlbT2_PcEybI
+                      - id: did:ebsi:zZeKyEJfUTGwajhNyNX928z#So1HIRt0Kqf0_BSwqv4VMNgkax3mCF9IjcQJwMnB3bs
+                        type: JsonWebKey2020
+                        controller: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                        publicKeyJwk:
+                          kty: EC
+                          x: AfLzzSLO_rH1n7fIJsGS9AUyZXCql78npwshtYE0Rf4
+                          y: vVoDE_-A4Yptu0oelJD2OYdTARMF52lSQXc2IqiwIMQ
+                          crv: P-256
+                    authentication:
+                      - did:ebsi:zZeKyEJfUTGwajhNyNX928z#RqnJsdrEXgSMJgCdlxFGya2oLmVEP1zz0Jo-VMFqq6E
+                      - did:ebsi:zZeKyEJfUTGwajhNyNX928z#So1HIRt0Kqf0_BSwqv4VMNgkax3mCF9IjcQJwMnB3bs
+                    assertionMethod:
+                      - did:ebsi:zZeKyEJfUTGwajhNyNX928z#So1HIRt0Kqf0_BSwqv4VMNgkax3mCF9IjcQJwMnB3bs
+                    capabilityInvocation:
+                      - did:ebsi:zZeKyEJfUTGwajhNyNX928z#RqnJsdrEXgSMJgCdlxFGya2oLmVEP1zz0Jo-VMFqq6E
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {did} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {did} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                DID Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /did-registry/v5/identifiers/{did}/actions:
+    post:
+      tags:
+        - DID documents
+      summary: Perform actions in DID
+      description: Perform actions in DID like checking a controller
+      operationId: post-actions
+      parameters:
+        - in: path
+          name: did
+          description: DID related to the action.
+          required: true
+          schema:
+            type: string
+          examples:
+            DID:
+              value: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+      requestBody:
+        description: |
+          The body follows the
+          [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification).
+
+          It requires the following fields:
+
+          - **jsonrpc**: must be exactly "2.0"
+          - **method**: method to be invoked
+          - **params**: method parameters
+          - **id**: identifier established by the client
+        content:
+          application/json:
+            schema:
+              required:
+                - jsonrpc
+                - id
+                - method
+                - params
+              type: object
+              properties:
+                jsonrpc:
+                  description: Must be exactly "2.0"
+                  type: string
+                method:
+                  description: Method that needs to be invoked
+                  type: string
+                params:
+                  description: Array of parameters
+                  type: array
+                  items:
+                    type: string
+                id:
+                  description: Identifier established by the client
+                  type: integer
+                  example: 1
+            examples:
+              checkController:
+                value:
+                  jsonrpc: "2.0"
+                  method: "checkController"
+                  params: ["0x6C286fA9e15Df7f245B8A751d4e9a0FA4C43E8b6"]
+                  id: 1
+      responses:
+        "200":
+          description: Response
+          content:
+            application/json:
+              schema:
+                title: JSON-RPC Response
+                type: object
+                properties:
+                  jsonrpc:
+                    description: Must be exactly "2.0"
+                    type: string
+                  id:
+                    description: Same identifier established by the client in the call
+                    type: integer
+                  result:
+                    description: Result of the call
+                    oneOf:
+                      - type: object
+                      - type: string
+                      - type: boolean
+              examples:
+                checkController:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    result: true
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {did} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {did} parameter is not valid
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /did-registry/v5/abi:
+    get:
+      operationId: get-abi
+      summary: Get ABI
+      description: Returns the ABI of DID Registry SC v5.
+      tags:
+        - ABI
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                description: The ABI of DID Registry SC v5.
+  /did-registry/v5/jsonrpc:
+    post:
+      operationId: post-jsonrpc
+      tags:
+        - JSON-RPC
+      summary: JSON-RPC API
+      description: |
+        The JSON-RPC API provides methods assisting the construction of blockchain transactions and
+        interaction with the ledger, i.e. write operation on ledger.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        description: |
+          The body follows the
+          [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification).
+
+          It requires the following fields:
+
+          - **jsonrpc**: must be exactly "2.0"
+          - **method**: method to be invoked
+          - **params**: method parameters
+          - **id**: identifier established by the client
+
+          ### API Methods
+
+          #### insertDidDocument
+
+          Call to build an unsigned transaction to insert a new DID document.
+          Requires an access token with "didr_invite" or "didr_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: DID to insert. It must be for a legal entity (DID v1)
+          - **baseDocument**: JSON string containing the @context of the DID document
+          - **vMethodId**: Verification method ID. Recommended: thumbprint of the public key JWK.
+          - **publicKey**: Public key for secp256k1 in uncompressed format prefixed with "0x04"
+          - **isSecp256k1**: It must be true
+          - **notBefore**: capability invocation is valid from this time
+          - **notAfter**: expiration of the capability invocation
+
+          #### updateBaseDocument
+
+          Call to build an unsigned transaction to update the base document
+          of an existing DID.
+          Requires an access token with "didr_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: Existing DID
+          - **baseDocument**: JSON string containing the @context of the DID document
+
+          #### addService
+
+          Call to build an unsigned transaction to create a service for an existing DID.
+          Requires an access token with "didr_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: Existing DID
+          - **service**: JSON string containing the service schema that needs to be added
+
+          #### revokeService
+
+          Call to build an unsigned transaction to revoke a service from a DID by a service id.
+          Requires an access token with "didr_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: Existing DID
+          - **serviceId**: Identifier of the service
+
+          #### addController
+
+          Call to build an unsigned transaction to add a new controller
+          to an existing DID document.
+          Requires an access token with "didr_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: Existing DID
+          - **controller**: DID of the new controller
+
+          #### revokeController
+
+          Call to build an unsigned transaction to revoke a controller
+          from a DID document.
+          Requires an access token with "didr_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: Existing DID
+          - **controller**: DID of controller to revoke
+
+          #### addVerificationMethod
+
+          Call to build an unsigned transaction to add a verification method. Please note that this verification method will only appear in the DID document after adding a verification relationship.
+          Requires an access token with "didr_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: Existing DID
+          - **vMethodId**: New verification method ID. Recommended: thumbprint of the public key JWK.
+          - **isSecp256k1**: Boolean defining if the public key is for secp256k1 curve or not
+          - **publicKey**: Public key as hex string. For an ES256K key, it must be in uncompressed
+            format prefixed with "0x04". For other algorithms, it must be the JWK transformed to
+            string and then to hex format.
+
+          #### addVerificationRelationship
+
+          Call to build an unsigned transaction to add a verification relationship.
+          Requires an access token with "didr_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: Existing DID
+          - **name**: Name of the verification relationship
+          - **vMethodId**: Reference to the verification method
+          - **notBefore**: Verification relationship is valid from this time
+          - **notAfter**: Expiration of the verification relationship
+
+          #### revokeVerificationMethod
+
+          Call to build an unsigned transaction to revoke a verification method.
+          Requires an access token with "didr_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: Existing DID
+          - **vMethodId**: Reference to the verification method
+          - **notAfter**: Date on which the revocation takes effect. It must be in the past
+
+          #### expireVerificationMethod
+
+          Call to build an unsigned transaction to expire a verification method.
+          Requires an access token with "didr_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: Existing DID
+          - **vMethodId**: Reference to the verification method
+          - **notAfter**: New expiration date. It must be in the future
+
+          #### rollVerificationMethod
+
+          Call to build an unsigned transaction to roll a verification method.
+          Requires an access token with "didr_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **args**: Roll arguments. JSON with the following fields:
+            - **did**: Existing DID
+            - **vMethodId**: New verification method ID. Recommended: thumbprint of the public key JWK.
+            - **isSecp256k1**: Boolean defining if the public key is for secp256k1 curve or not
+            - **publicKey**: Public key as hex string. For an ES256K key, it must be in uncompressed
+              format prefixed with "0x04". For other algorithms, it must be the JWK transformed to
+              string and then to hex format.
+            - **notBefore**: Verification relationship is valid from this time
+            - **notAfter**: Expiration of the verification relationship
+            - **oldVMethodId**: Old verification method id that will be rolled
+            - **duration**: Duration of the period of transition. During this period both
+              verification methods will be valid.
+
+          #### sendSignedTransaction
+
+          Call to send a signed transaction to the blockchain.
+          Requires an access token with "didr_invite" or "didr_write" scope.
+        content:
+          application/json:
+            schema:
+              required:
+                - jsonrpc
+                - id
+                - method
+                - params
+              type: object
+              properties:
+                jsonrpc:
+                  description: Must be exactly "2.0"
+                  type: string
+                method:
+                  description: Method that needs to be invoked
+                  type: string
+                params:
+                  description: Array of parameters
+                  type: array
+                  items:
+                    type: object
+                id:
+                  description: Identifier established by the client
+                  type: integer
+                  example: 1
+            examples:
+              Build tx to insertDidDocument:
+                value:
+                  jsonrpc: "2.0"
+                  method: insertDidDocument
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      did: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                      baseDocument: '{"@context":["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/jws-2020/v1"]}'
+                      vMethodId: axZAOKbj-YyMiIN2CRLCwPjSCgMwhBwCVNgEbOl3QJY
+                      publicKey: "0x04e98e599b648b3548468bc8da31937f11980159fd2c1af555b5db9cfab7b4095517d7094c829bb7d5f876ba2054ace767ca66f22df341bc6ad032f865cadb30cb"
+                      isSecp256k1: true
+                      notBefore: 1676474669
+                      notAfter: 1830869669
+                  id: 474
+              Build tx to updateBaseDocument:
+                value:
+                  jsonrpc: "2.0"
+                  method: updateBaseDocument
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      did: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                      baseDocument: '{"@context":["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/jws-2020/v1"]}'
+                  id: 524
+              Build tx to addService:
+                value:
+                  jsonrpc: "2.0"
+                  method: addService
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      did: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                      service: '{"id":"1","type":"CredentialRegistry","serviceEndpoint":{"registries":["https://registry.example.com/{credentialSubject.id}","https://identity.foundation/vcs/{credentialSubject.id}"],"byId":"/vc/{id}","byType":"/type/{type}"}}'
+                  id: 524
+              Build tx to revokeService:
+                value:
+                  jsonrpc: "2.0"
+                  method: revokeService
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      did: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                      serviceId: "1"
+                  id: 524
+              Build tx to addController:
+                value:
+                  jsonrpc: "2.0"
+                  method: addController
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      did: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                      controller: did:ebsi:zZviptEhFN1r2u18hhi7Hof
+                  id: 757
+              Build tx to revokeController:
+                value:
+                  jsonrpc: "2.0"
+                  method: revokeController
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      did: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                      controller: did:ebsi:zZviptEhFN1r2u18hhi7Hof
+                  id: 165
+              Build tx to addVerificationMethod (for ES256K algorithm):
+                value:
+                  jsonrpc: "2.0"
+                  method: addVerificationMethod
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      did: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                      vMethodId: axZAOKbj-YyMiIN2CRLCwPjSCgMwhBwCVNgEbOl3QJY
+                      publicKey: "0x04e98e599b648b3548468bc8da31937f11980159fd2c1af555b5db9cfab7b4095517d7094c829bb7d5f876ba2054ace767ca66f22df341bc6ad032f865cadb30cb"
+                      isSecp256k1: true
+                  id: 185
+              Build tx to addVerificationMethod (for algorithm different to ES256K):
+                value:
+                  jsonrpc: "2.0"
+                  method: addVerificationMethod
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      did: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                      vMethodId: HntX1odLlp_5w-W18Yk6OhR5dNNHsugaM2lOuAHDpmU
+                      publicKey: "0x7b226b7479223a224543222c2278223a227839756d53644855304a6458727a7155326130533569627034625a4c467877364e6a6f506b637035513173222c2279223a2276537767487062736c773757433472506a30676d706c324661504e337073414a6c397a4c39775963767a73222c22637276223a22502d323536227d"
+                      isSecp256k1: false
+                  id: 575
+              Build tx to addVerificationRelationship:
+                value:
+                  jsonrpc: "2.0"
+                  method: addVerificationRelationship
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      did: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                      name: assertionMethod
+                      vMethodId: HntX1odLlp_5w-W18Yk6OhR5dNNHsugaM2lOuAHDpmU
+                      notBefore: 1676475339
+                      notAfter: 1830870339
+                  id: 585
+              Build tx to revokeVerificationMethod:
+                value:
+                  jsonrpc: "2.0"
+                  method: revokeVerificationMethod
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      did: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                      vMethodId: HntX1odLlp_5w-W18Yk6OhR5dNNHsugaM2lOuAHDpmU
+                      notAfter: 1676475497
+                  id: 24
+              Build tx to expireVerificationMethod:
+                value:
+                  jsonrpc: "2.0"
+                  method: expireVerificationMethod
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      did: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                      vMethodId: HntX1odLlp_5w-W18Yk6OhR5dNNHsugaM2lOuAHDpmU
+                      notAfter:
+                  id: 373
+              Build tx to rollVerificationMethod (for ES256K algorithm):
+                value:
+                  jsonrpc: "2.0"
+                  method: rollVerificationMethod
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      args:
+                        did: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                        vMethodId: axZAOKbj-YyMiIN2CRLCwPjSCgMwhBwCVNgEbOl3QJY
+                        publicKey: "0x04e98e599b648b3548468bc8da31937f11980159fd2c1af555b5db9cfab7b4095517d7094c829bb7d5f876ba2054ace767ca66f22df341bc6ad032f865cadb30cb"
+                        isSecp256k1: true
+                        notBefore: 1704067200
+                        notAfter: 1735689600
+                        oldVMethodId: HntX1odLlp_5w-W18Yk6OhR5dNNHsugaM2lOuAHDpmU
+                        duration: 86400
+                  id: 260
+              Build tx to rollVerificationMethod (for algorithm different to ES256K):
+                value:
+                  jsonrpc: "2.0"
+                  method: rollVerificationMethod
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      args:
+                        did: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                        vMethodId: RCWXLj5EyKYqmaX2j6IUXTtGLIBzqCib6UdJZvRNUJw
+                        publicKey: "0x7b22637276223a2245643235353139222c2278223a22426430466f75497a3445527136544c7032736441474457434d58775749664671703944364865726b77736f222c226b7479223a224f4b50227d"
+                        isSecp256k1: false
+                        notBefore: 1704067200
+                        notAfter: 1735689600
+                        oldVMethodId: HntX1odLlp_5w-W18Yk6OhR5dNNHsugaM2lOuAHDpmU
+                        duration: 86400
+                  id: 558
+              Send Transaction:
+                value:
+                  jsonrpc: "2.0"
+                  method: sendSignedTransaction
+                  id: 1
+                  params:
+                    - protocol: eth
+                      unsignedTransaction:
+                        from: "0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7"
+                        to: "0xFde86148db58f57787C06BeAf63a9c3f789357b3"
+                        data: "0x0000..."
+                        nonce: "0x00"
+                        chainId: "0x1b3b"
+                        gasLimit: "0x10000"
+                        gasPrice: "0x00"
+                        value: "0x00"
+                      r: "0x..."
+                      s: "0x..."
+                      v: "0x..."
+                      signedRawTransaction: "--- signed raw transaction ---"
+      responses:
+        "200":
+          description: Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonRpcResponse"
+              examples:
+                Build unsigned blockchain transaction to register a DID:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 482
+                    result:
+                      from: "0x8445fC96e27ceB0d1794be16a1Ac8BF5D765AACB"
+                      to: "0x823BBc0ceE3dE3B61AcfA0CEedb951AB9a013F05"
+                      data: "0x250f4d9700000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000120fb33cccb447605de75846617385f6d2aac28010f53a89ecb5ce151751c53c8d400000000000000000000000000000000000000000000000000000000000000206469643a656273693a7a5a766970744568464e31723275313868686937486f66000000000000000000000000000000000000000000000000000000000000000865794a68622e2e2e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000216469643a656273693a7a323536617342576d4842736a325a4e567847354d686b7000000000000000000000000000000000000000000000000000000000000000"
+                      value: "0x0"
+                      nonce: "0xb1d3"
+                      chainId: "0x181f"
+                      gasLimit: "0x1000000"
+                      gasPrice: "0x0"
+                Build tx:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 482
+                    result:
+                      from: "0x8445fC96e27ceB0d1794be16a1Ac8BF5D765AACB"
+                      to: "0x823BBc0ceE3dE3B61AcfA0CEedb951AB9a013F05"
+                      data: "0x250f4d9700000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000120fb33cccb447605de75846617385f6d2aac28010f53a89ecb5ce151751c53c8d400000000000000000000000000000000000000000000000000000000000000206469643a656273693a7a5a766970744568464e31723275313868686937486f66000000000000000000000000000000000000000000000000000000000000000865794a68622e2e2e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000216469643a656273693a7a323536617342576d4842736a325a4e567847354d686b7000000000000000000000000000000000000000000000000000000000000000"
+                      value: "0x0"
+                      nonce: "0xb1d3"
+                      chainId: "0x181f"
+                      gasLimit: "0x1000000"
+                      gasPrice: "0x0"
+                Send a transaction:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    result: "0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Request:
+                  $ref: "#/components/examples/BadRequest"
+components:
+  schemas:
+    ProblemDetails:
+      title: Problem Details
+      description: A [Problem Details](https://datatracker.ietf.org/doc/html/rfc7807) object.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the problem type. When dereferenced,
+            it SHOULD provide human-readable documentation for the problem type.
+          default: about:blank
+        title:
+          type: string
+          description: |
+            A short summary of the problem type.
+          example: Internal Server Error
+        status:
+          type: integer
+          format: int32
+          description: |
+            The HTTP status code generated by the origin server for this occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          example: 500
+        detail:
+          type: string
+          description: |
+            A human readable explanation specific to this occurrence of the problem.
+          example: Connection timeout
+        instance:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the specific occurrence of the problem.
+            It may or may not yield further information if dereferenced.
+    Links:
+      title: Links
+      description: Links model used for pagination
+      type: object
+      properties:
+        last:
+          type: string
+          description: URI of the last page
+        prev:
+          type: string
+          description: URI of the previous page
+        next:
+          type: string
+          description: URI of the next page
+        first:
+          type: string
+          description: URI of the first page
+    DIDDocument:
+      title: DID document
+      description: DID document as a JSON-LD document
+      type: object
+      additionalProperties: true
+      properties:
+        "@context":
+          description: DID document @context
+          oneOf:
+            - type: string
+              format: uri
+            - type: array
+              items:
+                type: string
+                format: uri
+    JsonRpcResponse:
+      title: JSON-RPC Response
+      type: object
+      properties:
+        jsonrpc:
+          description: Must be exactly "2.0"
+          type: string
+        id:
+          description: Same identifier established by the client in the call
+          type: integer
+        result:
+          description: Result of the call
+          oneOf:
+            - type: object
+            - type: string
+  examples:
+    BadRequest:
+      value:
+        title: Bad request
+        status: 400
+        detail: Bad request
+    NotFound:
+      value:
+        title: Not found
+        status: 404
+        detail: Not found
+    InternalError:
+      value:
+        title: Internal error
+        status: 500
+        detail: Internal error
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+  - url: http://localhost
+    description: Local Computer Environment
+  - url: https://api-test.ebsi.eu
+    description: EBSI Test Environment
+  - url: https://api-pilot.ebsi.eu
+    description: EBSI Pilot Environment
+  - url: https://api-conformance.ebsi.eu
+    description: EBSI Conformance Environment

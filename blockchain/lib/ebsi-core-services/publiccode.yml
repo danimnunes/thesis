@@ -1,0 +1,125 @@
+# This repository adheres to the publiccode.yml standard by including this
+# metadata file that makes public software easily discoverable.
+# More info at https://github.com/italia/publiccode.yml
+
+publiccodeYmlVersion: "0.2"
+applicationSuite: European Blockchain Services Infrastructure
+categories:
+  - application-development
+description:
+  en:
+    apiDocumentation: "https://hub.ebsi.eu/apis"
+    documentation: |-
+      https://ec.europa.eu/digital-building-blocks/sites/display/EBSI/EBSI+Open+Source
+    features:
+      - besu-plugins
+      - cli
+      - core-libs
+      - Core Services
+      - core-services-testing
+      - ebsi-node-docker-compose
+      - ebsi-node-kubernetes
+      - healthcheck
+      - performance-testing
+      - reverse-proxy-waf-example
+      - root-tao-api
+      - trusted-nodes-list
+      - validator-smart-contract
+      - wallet-conformance-testing
+    genericName: EBSI
+    localisedName: EBSI
+    longDescription: |
+      The **European Blockchain Services Infrastructure (EBSI)** was born in
+      2018 when **29 countries** (all EU members states, Norway and
+      Liechtenstein) and the **EU Commission** joined forces to create the
+      **European Blockchain Partnership (EBP)**.
+
+
+      The EBP’s vision is to leverage blockchain to create cross-border services
+      for public administrations, businesses, citizens and their ecosystems to
+      verify information and make services trustworthy. As EBSI continues to
+      evolve, so does its governance. The EUROPEUM-EDIC, a new legal entity, is
+      currently in the process of taking over EBSI's governance and preparing it
+      to go into production.
+
+
+      As the first pan-European, public-driven blockchain initiative of its
+      kind, at EBSI we tap into blockchain's tamper-evident, immutable and
+      decentralised properties to support better public services for all Europe.
+      The blockchain ledger can be used to store information in a trusted,
+      decentralised way, allowing for new forms of verification, traceability
+      and transparency for citizens.
+
+
+      Business: What can you do with EBSI?
+
+
+      Several domains and industries can benefit from using blockchain in their
+      business processes. Here we introduce EBSI’s major Use Case families and
+      domains, so you can find out how you can benefit from it.
+
+
+      [++Discover
+      more++](https://ec.europa.eu/digital-building-blocks/sites/display/EBSI/What+is+ebsi#what-ebsi-used-for)++
+
+
+      ++Technology: How does it work?
+
+
+      Every transaction recorded on the EBSI ledger follows the same path. Here
+      we explain the way in which EBSI's APIs, Smart Contracts and ledger work
+      together to provide trusted information to its users.
+
+
+      [++Discover
+      more++](https://ec.europa.eu/digital-building-blocks/sites/display/EBSI/What+is+ebsi#how-it-works)++
+
+
+      ++Infrastructure: a pan-European network of nodes
+
+
+      EBSI's infrastructure is decentralised: instead of a unique database,
+      there are many synchronised copies hosted in our network of European
+      nodes. This is what makes EBSI tamper-proof.
+
+
+      [++Discover
+      more++](https://ec.europa.eu/digital-building-blocks/sites/display/EBSI/What+is+ebsi#infrastructure)
+    shortDescription: European Blockchain Services Infrastructure
+developmentStatus: beta
+landingURL: "https://hub.ebsi.eu/"
+legal:
+  authorsFile: DIGIT
+  license: EUPL-1.2
+  mainCopyrightOwner: European Commission
+  repoOwner: DIGIT
+localisation:
+  availableLanguages:
+    - en
+  localisationReady: false
+logo: |-
+  https://ec.europa.eu/digital-building-blocks/sites/download/attachments/468026266/logo-ebsi.png
+maintenance:
+  contacts:
+    - email: pierre.marro@ec.europa.eu
+      name: Pierre MARRO
+      phone: "+3222990492"
+    - email: jose-manuel.panizo-plaza@ec.europa.eu
+      name: Jose Manuel PANIZZO PLAZA
+      phone: "+3222988702"
+  type: community
+name: EBSI
+platforms:
+  - linux
+  - web
+releaseDate: "2025-06-30"
+roadmap: "https://hub.ebsi.eu/conformance/standards-versions"
+softwareType: standalone/backend
+url: "https://code.europa.eu/ebsi/public"
+usedBy:
+  - DIGIT
+  - ebsi-ne.com
+  - ebsi-vector.eu
+  - trace4eu.eu
+  - getonepass.eu
+  - dc4eu.eu

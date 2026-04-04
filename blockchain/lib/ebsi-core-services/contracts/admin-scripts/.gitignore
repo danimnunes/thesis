@@ -1,0 +1,16 @@
+.env
+.openzeppelin
+node_modules
+artifacts
+cache
+src
+build
+*.log
+*log
+.secret*
+deployments
+
+# the copy of all contracts needed for compilation,hardhat single string for sources
+contracts
+deployments.env
+wallets.env

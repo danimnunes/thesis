@@ -1,0 +1,285 @@
+---
+workflow:
+  rules:
+    # Don't run GitLab CI on "merge request" events
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    # Deploy in the following environments
+    ## prod
+    - if: $CI_COMMIT_TAG =~ /^prod\/.+$/
+      variables:
+        EBSINODES_ENV: prod
+        APP_VERSION: prod-$CI_COMMIT_SHORT_SHA
+    ## preprod
+    - if: $CI_COMMIT_TAG =~ /^preprod\/.+$/
+      variables:
+        EBSINODES_ENV: preprod
+        APP_VERSION: preprod-$CI_COMMIT_SHORT_SHA
+    ## pilot
+    - if: $CI_COMMIT_TAG =~ /^pilot\/.+$/
+      variables:
+        EBSINODES_ENV: pilot
+        APP_VERSION: pilot-$CI_COMMIT_SHORT_SHA
+    ## conformance
+    - if: $CI_COMMIT_TAG =~ /^conformance\/.+$/
+      variables:
+        EBSINODES_ENV: conformance
+        APP_VERSION: conformance-$CI_COMMIT_SHORT_SHA
+    ## test
+    - if: $CI_COMMIT_BRANCH == "main"
+      variables:
+        EBSINODES_ENV: test
+        APP_VERSION: test-$CI_COMMIT_SHORT_SHA
+    # Run tests on any branch
+    - if: $CI_COMMIT_BRANCH
+
+# Define stages (defaults — see https://docs.gitlab.com/ci/yaml/#stages)
+# stages:
+#   - .pre
+#   - build
+#   - test
+#   - deploy
+#   - .post
+
+include:
+  # Deploy
+  - component: $CI_SERVER_FQDN/europeum/private/infrastructure/gitlab-pipelines/pipeline-compose-build-ebsinodes-app@main
+    inputs:
+      compose_dir: .
+      ebsinodes_env: $EBSINODES_ENV
+      app_version: $APP_VERSION
+    rules:
+      - if: $CI_COMMIT_TAG =~ /^(prod|preprod|pilot|conformance)\/.+$/
+      - if: $CI_COMMIT_BRANCH == "main"
+  # Update graph-node (subgraphs-deployer) tag in k8s
+  - component: $CI_SERVER_FQDN/europeum/private/infrastructure/gitlab-pipelines/update-k8s-app-version@main
+    inputs:
+      stage: .post
+      kubernetes_team: devteam
+      kubernetes_env: $EBSINODES_ENV
+      kubernetes_app: graph-node
+      app_version: $APP_VERSION
+    rules:
+      - if: $CI_COMMIT_TAG =~ /^(prod|preprod|pilot|conformance)\/.+$/
+      - if: $CI_COMMIT_BRANCH == "main"
+  # Lint Dockerfile
+  - component: $CI_SERVER_FQDN/europeum/private/infrastructure/gitlab-pipelines/hadolint@main
+    inputs:
+      stage: .pre
+    rules:
+      # Don't run during deployments
+      - if: $CI_COMMIT_TAG =~ /^(prod|preprod|pilot|conformance)\/.+$/
+        when: never
+      - when: always
+  # - project: "europeum/private/infrastructure/gitlab-pipelines"
+  #   file: "/templates/renovate-generate-changesets.yml"
+
+# Tests
+
+variables:
+  FF_ENABLE_JOB_CLEANUP: "true"
+  # Fastzip is a performant archiver for cache/artifact archiving and extraction
+  # https://docs.gitlab.com/runner/configuration/feature-flags/#available-feature-flags
+  FF_USE_FASTZIP: "true"
+  # To adjust compression ratio, set to fastest, fast, default, slow, or slowest. This setting works with the Fastzip archiver only.
+  # https://docs.gitlab.com/ci/runners/configure_runners/#artifact-and-cache-settings
+  ARTIFACT_COMPRESSION_LEVEL: fastest
+  CACHE_COMPRESSION_LEVEL: fastest
+
+# Audit dependencies before installing them
+audit_dependencies:
+  stage: .pre
+  rules:
+    - when: always
+  image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/node-runner:24.14.1-alpine3.23
+  script:
+    - corepack enable
+    - corepack prepare --activate
+    - pnpx audit-ci@7.1.0 --config audit-ci.jsonc
+
+# Check for misspellings
+codespell:
+  stage: .pre
+  rules:
+    # Don't run during deployments
+    - if: $CI_COMMIT_TAG =~ /^(prod|preprod|pilot|conformance)\/.+$/
+      when: never
+    - when: on_success
+  image:
+    name: python:3.14-alpine
+  variables:
+    CODESPELL_VERSION: "2.4.1"
+  before_script:
+    - if [ ! -d .venv ]; then echo "setting up python venv"; python -m venv .venv; fi
+    - source .venv/bin/activate
+  script:
+    - pip install codespell==$CODESPELL_VERSION
+    - codespell --version
+    - codespell website/ --skip="build,node_modules,*.svg,"
+  cache:
+    key: "${CI_JOB_IMAGE}-codespell-${CODESPELL_VERSION}"
+    paths: [.venv/]
+
+# node_modules cache
+.node_modules_cache: &node_modules_cache
+  key:
+    files:
+      - pnpm-lock.yaml
+  paths:
+    - .pnpm-store
+  policy: pull
+
+# Nx cache
+.nx_cache: &nx_cache
+  key: nx-cache-$CI_COMMIT_REF_SLUG
+  paths:
+    - .nx/cache
+  policy: pull
+
+# Default node config
+.default_node:
+  rules:
+    # Don't run during deployments
+    - if: $CI_COMMIT_TAG =~ /^(prod|preprod|pilot|conformance)\/.+$/
+      when: never
+    - when: on_success
+  image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/node-runner:24.14.1-alpine3.23
+  before_script:
+    - git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+    - git fetch origin main:main
+    - corepack enable
+    - corepack prepare --activate
+    - pnpm config set store-dir .pnpm-store
+    - pnpm install --prefer-offline --frozen-lockfile --reporter=silent
+  cache:
+    - *node_modules_cache
+    - *nx_cache
+  needs: []
+  variables:
+    NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
+
+# Install dependencies
+install:
+  stage: build
+  extends: .default_node
+  needs:
+    - job: audit_dependencies
+      artifacts: false
+  cache:
+    - <<: *node_modules_cache
+      policy: pull-push
+    - *nx_cache
+  script:
+    # Just install the dependencies and store them in cache
+    - exit 0
+
+# Check if a changeset is present
+changesets:
+  stage: test
+  extends: .default_node
+  needs:
+    - job: install
+      artifacts: false
+  variables:
+    GIT_DEPTH: 0
+  script:
+    - pnpm exec changeset status --since=main
+
+# Check if some dependencies can be deduped
+dedupe:
+  stage: test
+  extends: .default_node
+  needs:
+    - job: install
+      artifacts: false
+  script:
+    - pnpm dedupe --check --ignore-scripts
+
+# Check if licenses are up-to-date
+licenses:
+  stage: test
+  extends: .default_node
+  needs:
+    - job: install
+      artifacts: false
+  script:
+    - node ./scripts/licenses.mjs
+    - git diff --name-only --exit-code
+
+# syncpack - https://syncpack.dev/command/lint/
+syncpack:
+  stage: test
+  extends: .default_node
+  needs:
+    - job: install
+      artifacts: false
+  script:
+    - pnpm exec syncpack lint --dependency-types prod,dev
+
+# Run build command
+build:
+  stage: test
+  extends: .default_node
+  needs:
+    - job: install
+      artifacts: false
+  cache:
+    - *node_modules_cache
+    - <<: *nx_cache
+      policy: pull-push
+  script:
+    - pnpm run build
+
+# Lint code
+lint:
+  stage: test
+  extends: .default_node
+  needs:
+    - job: build
+      artifacts: false
+  script:
+    - pnpm run lint
+
+# Run knip
+knip:
+  stage: test
+  extends: .default_node
+  needs:
+    - job: build
+      artifacts: false
+  script:
+    - pnpm run knip
+
+# Run unit tests (except for subgraphs)
+test:
+  stage: test
+  extends: .default_node
+  needs:
+    - job: build
+      artifacts: false
+  script:
+    - pnpm run test --exclude='@ebsiint-subgraph/*'
+
+# Use a different image to run subgraph tests
+test_subgraphs:
+  stage: test
+  rules:
+    # Don't run during deployments
+    - if: $CI_COMMIT_TAG =~ /^(prod|preprod|pilot|conformance)\/.+$/
+      when: never
+    - when: on_success
+  image:
+    name: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/matchstick-runner:matchstick-runner-0.0.0
+    entrypoint: [""]
+  needs:
+    - job: audit_dependencies
+      artifacts: false
+  script:
+    - node -v
+    - git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+    - git fetch origin main:main
+    - corepack enable
+    - corepack prepare --activate
+    - pnpm config set store-dir .pnpm-store
+    - pnpm install --prefer-offline --frozen-lockfile --reporter=silent
+    - pnpm run test --exclude='*,!@ebsiint-subgraph/*'

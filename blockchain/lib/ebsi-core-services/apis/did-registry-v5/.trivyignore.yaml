@@ -1,0 +1,19 @@
+# In order to run Trivy on the Docker image, you must first build it.
+# Run the following command from the root folder (replace "111" with any version):
+#
+# ```sh
+# $ APP_VERSION=111 docker compose build did-registry-api-v5
+# ```
+#
+# Then, run Trivy on the newly built image:
+#
+# ```sh
+# $ trivy image --ignorefile ./apis/did-registry-v5/.trivyignore.yaml 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/did-registry-api-v5:111
+# ```
+
+vulnerabilities:
+  # elliptic@6.6.1 (LOW)
+  - id: CVE-2025-14505
+    paths:
+      - usr/src/app/node_modules/.pnpm/elliptic@6.6.1/node_modules/elliptic/package.json
+    statement: No fix available

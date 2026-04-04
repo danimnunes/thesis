@@ -1,0 +1,6 @@
+{
+  "name": "@ebsiint-sc/trusted-issuers-registry-v3",
+  "version": "3.0.0-rc.9",
+  "license": "EUPL-1.2",
+  "private": true
+}

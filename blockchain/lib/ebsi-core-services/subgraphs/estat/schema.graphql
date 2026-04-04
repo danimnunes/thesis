@@ -1,0 +1,84 @@
+###############################################################################
+#                            Track and Trace SC v1                            #
+###############################################################################
+
+enum Source {
+  BLOCK
+  EXTERNAL
+}
+
+enum Permission {
+  DELEGATE
+  WRITE
+  CREATOR
+}
+
+type Creator @entity(immutable: false) {
+  # ID
+  id: String!
+
+  # Properties
+  active: Boolean!
+
+  # Relationships
+  documents: [Document!]! @derivedFrom(field: "creator")
+}
+
+type Operator @entity(immutable: true) {
+  # ID
+  id: Bytes!
+
+  # Relationships
+  invitations: [Invitation!]! @derivedFrom(field: "subject")
+}
+
+type Document @entity(immutable: false) {
+  # ID
+  id: Bytes!
+
+  # Properties
+  timestamp: BigInt!
+  source: Source!
+  proof: Bytes!
+  metadata: String!
+
+  # Relationships
+  creator: Creator!
+  events: [DocumentEvent!]! @derivedFrom(field: "document")
+  invitations: [Invitation!]! @derivedFrom(field: "document")
+}
+
+type Invitation @entity(immutable: false) {
+  # ID - Set to document.id.concat(subject.id).concatI32(permission)
+  id: Bytes!
+
+  # Properties
+  type: Permission!
+  # TODO: would be good to link it to an entity if possible (not sure)
+  grantedBy: Bytes!
+
+  # Relationships
+  document: Document!
+  subject: Operator!
+  parent: Invitation
+  children: [Invitation!]! @derivedFrom(field: "parent")
+}
+
+# `DocumentEvent` is not immutable because it can be removed
+type DocumentEvent @entity(immutable: false) {
+  # ID - Set to document.id.concat(event.eventHash)
+  id: Bytes!
+
+  # Properties
+  externalHash: String!
+  hash: Bytes!
+  timestamp: BigInt!
+  source: Source!
+  proof: Bytes!
+  sender: Bytes!
+  origin: String!
+  metadata: String!
+
+  # Relationships
+  document: Document!
+}

@@ -1,0 +1,35 @@
+{
+  "private": true,
+  "name": "@ebsiint-subgraph/estat",
+  "version": "0.0.0-rc.0",
+  "type": "module",
+  "license": "EUPL-1.2",
+  "scripts": {
+    "deploy": "node ./scripts/prepare.mjs && node ./scripts/deploy.mjs",
+    "lint": "eslint .",
+    "setup": "cross-env NODE_ENV=test ESTAT_SC_V1_ADDRESS=0x4169e0f7a7768B10fD37CB850943cd681C277CAD ESTAT_SC_V1_START_BLOCK=15372500 node ./scripts/prepare.mjs && pnpm exec graph codegen",
+    "test": "pnpm exec graph test -d",
+    "test:unit": "pnpm exec graph test"
+  },
+  "dependencies": {
+    "@ebsiint-sc/track-and-trace": "workspace:*",
+    "@graphprotocol/graph-ts": "0.38.2"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "0.98.1",
+    "assemblyscript": "0.19.23",
+    "assemblyscript-json": "1.1.0",
+    "binaryen": "102.0.0-nightly.20211028",
+    "execa": "9.6.1",
+    "matchstick-as": "0.6.0"
+  },
+  "nx": {
+    "targets": {
+      "deploy": {
+        "dependsOn": [
+          "^build"
+        ]
+      }
+    }
+  }
+}

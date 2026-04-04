@@ -1,0 +1,955 @@
+openapi: 3.1.0
+info:
+  title: Trusted Policies Registry API v3
+  version: 3.0.0
+  description: |
+    The Trusted Policies Registry API provides an interface to interact with policies stored at the ledger administrated by the Trusted Policies Registry Smart Contract.
+  contact:
+    name: EBSI Support - Service Desk
+    url: https://ec.europa.eu/digital-building-blocks/tracker/plugins/servlet/desk/portal/11
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/page/eupl-text-11-12
+paths:
+  /trusted-policies-registry/v3/policies:
+    get:
+      operationId: get-policies
+      summary: List policies
+      description: Returns a list of policies registered in the blockchain.
+      tags:
+        - Policies
+      parameters:
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: URI to policies
+                  items:
+                    type: array
+                    description: List of policies
+                    items:
+                      type: object
+                      properties:
+                        policyName:
+                          type: string
+                          description: Name of the policy
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items in a collection
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page
+                  links:
+                    $ref: "#/components/schemas/Links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/policies?page[after]=3&page[size]=2
+                    items:
+                      - policyName: "TSR:insertSchema"
+                        href: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/policies/TSR:insertSchema
+                      - policyName: "TSR:updateSchema"
+                        href: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/policies/TSR:updateSchema
+                    total: 124
+                    pageSize: 2
+                    links:
+                      first: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/policies?page[after]=1&page[size]=2
+                      prev: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/policies?page[after]=2&page[size]=2
+                      next: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/policies?page[after]=4&page[size]=2
+                      last: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/policies?page[after]=62&page[size]=2
+        "400":
+          $ref: "#/components/responses/400"
+        "500":
+          $ref: "#/components/responses/500"
+  /trusted-policies-registry/v3/policies/{policyName}:
+    get:
+      operationId: get-policy
+      summary: Get a policy
+      description: Returns a trusted policy identified by its name.
+      tags:
+        - Policies
+      parameters:
+        - name: policyName
+          in: path
+          schema:
+            type: string
+          example: "TSR:insertSchema"
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Policy"
+              examples:
+                Success:
+                  value:
+                    policyId: "0"
+                    description: description-test-036ccfd98b88a9c3ad1a23e730bc414f
+                    policyName: policy-test-fd0010fa07c2ff3eba04a46547687d17
+                    status: true
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Policy Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          $ref: "#/components/responses/500"
+  /trusted-policies-registry/v3/users:
+    get:
+      operationId: get-users
+      summary: List users
+      description: Returns a list of users registered in the registry.
+      tags:
+        - Users
+      parameters:
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: URI to users
+                  items:
+                    type: array
+                    description: List of users
+                    items:
+                      type: object
+                      properties:
+                        user:
+                          type: string
+                          description: User address
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items in a collection
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page
+                  links:
+                    $ref: "#/components/schemas/Links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/users?page[after]=3&page[size]=2
+                    items:
+                      - user: "0x7E918E979A5FFa5e540d8C8d6dB220E3f0704858"
+                        href: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/users/0x7E918E979A5FFa5e540d8C8d6dB220E3f0704858
+                      - user: "0x69e48d89bf5e09588E858D757323b4abBBB3f814"
+                        href: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/users/0x69e48d89bf5e09588E858D757323b4abBBB3f814
+                    total: 124
+                    pageSize: 2
+                    links:
+                      first: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/users?page[after]=1&page[size]=2
+                      prev: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/users?page[after]=2&page[size]=2
+                      next: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/users?page[after]=4&page[size]=2
+                      last: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/users?page[after]=62&page[size]=2
+        "400":
+          $ref: "#/components/responses/400"
+        "500":
+          $ref: "#/components/responses/500"
+  /trusted-policies-registry/v3/users/{user}:
+    get:
+      operationId: get-user
+      summary: Get a user
+      description: Returns a user identified by its address.
+      tags:
+        - Users
+      parameters:
+        - name: user
+          in: path
+          schema:
+            type: string
+          required: true
+          examples:
+            user:
+              description: Valid Pilot user
+              value: "0x69e48d89bf5e09588E858D757323b4abBBB3f814"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              examples:
+                Success:
+                  value:
+                    user: "0x69e48d89bf5e09588E858D757323b4abBBB3f814"
+                    attributes:
+                      - "TSR:insertSchema"
+                      - "TSR:updateSchema"
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {policyId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {policyId} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Policy Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          $ref: "#/components/responses/500"
+  /trusted-policies-registry/v3/subjects:
+    get:
+      operationId: get-subjects
+      summary: List subjects
+      description: Returns a list of subjects registered in the registry.
+      tags:
+        - Subjects
+      parameters:
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: URI to subjects
+                  items:
+                    type: array
+                    description: List of subjects
+                    items:
+                      type: object
+                      properties:
+                        subject:
+                          type: string
+                          description: Subject address
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items in a collection
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page
+                  links:
+                    $ref: "#/components/schemas/Links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/subjects?page[after]=3&page[size]=2
+                    items:
+                      - subject: "0x7E918E979A5FFa5e540d8C8d6dB220E3f0704858"
+                        href: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/subjects/0x7E918E979A5FFa5e540d8C8d6dB220E3f0704858
+                      - subject: "0x69e48d89bf5e09588E858D757323b4abBBB3f814"
+                        href: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/subjects/0x69e48d89bf5e09588E858D757323b4abBBB3f814
+                    total: 124
+                    pageSize: 2
+                    links:
+                      first: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/subjects?page[after]=1&page[size]=2
+                      prev: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/subjects?page[after]=2&page[size]=2
+                      next: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/subjects?page[after]=4&page[size]=2
+                      last: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/subjects?page[after]=62&page[size]=2
+        "400":
+          $ref: "#/components/responses/400"
+        "500":
+          $ref: "#/components/responses/500"
+  /trusted-policies-registry/v3/subjects/{subject}:
+    get:
+      operationId: get-subject
+      summary: Get a subject
+      description: Returns a subject identified by its address.
+      tags:
+        - Subjects
+      parameters:
+        - name: subject
+          in: path
+          schema:
+            type: string
+          required: true
+          examples:
+            subject:
+              description: Valid Pilot subject
+              value: "0x69e48d89bf5e09588E858D757323b4abBBB3f814"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subject"
+              examples:
+                Success:
+                  value:
+                    subject: "0x69e48d89bf5e09588E858D757323b4abBBB3f814"
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {subject} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {subject} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Subject Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          $ref: "#/components/responses/500"
+  /trusted-policies-registry/v3/subjects/{subject}/policies:
+    get:
+      operationId: get-subject-policies
+      summary: List subject policies
+      description: Returns a list of policies assigned to an subject.
+      tags:
+        - Subjects
+      parameters:
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+        - name: subject
+          in: path
+          schema:
+            type: string
+          required: true
+          examples:
+            subject:
+              description: Valid Pilot subject
+              value: "0x69e48d89bf5e09588E858D757323b4abBBB3f814"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: URI to policies
+                  items:
+                    type: array
+                    description: List of policies
+                    items:
+                      type: object
+                      properties:
+                        policyName:
+                          type: string
+                          description: Policy name
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items in a collection
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page
+                  links:
+                    $ref: "#/components/schemas/Links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/subjects/0x69e48d89bf5e09588E858D757323b4abBBB3f814/policies?page[after]=3&page[size]=2
+                    items:
+                      - policyName: TSR:insertSchema
+                        href: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/subjects/0x69e48d89bf5e09588E858D757323b4abBBB3f814/policies/TSR:insertSchema
+                    total: 1
+                    pageSize: 10
+                    links:
+                      first: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/subjects/0x69e48d89bf5e09588E858D757323b4abBBB3f814/policies?page[after]=1&page[size]=2
+                      prev: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/subjects/0x69e48d89bf5e09588E858D757323b4abBBB3f814/policies?page[after]=2&page[size]=2
+                      next: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/subjects/0x69e48d89bf5e09588E858D757323b4abBBB3f814/policies?page[after]=4&page[size]=2
+                      last: https://api-pilot.ebsi.eu/trusted-policies-registry/v3/subjects/0x69e48d89bf5e09588E858D757323b4abBBB3f814/policies?page[after]=62&page[size]=2
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Subject Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          $ref: "#/components/responses/500"
+  /trusted-policies-registry/v3/subjects/{subject}/policies/{policyName}:
+    get:
+      operationId: get-subject-policy
+      summary: Get subject policy
+      description: Returns the policy defined for a subject.
+      tags:
+        - Subjects
+      parameters:
+        - name: subject
+          in: path
+          schema:
+            type: string
+          required: true
+          examples:
+            subject:
+              description: Valid Pilot subject
+              value: "0x69e48d89bf5e09588E858D757323b4abBBB3f814"
+        - name: policyName
+          in: path
+          schema:
+            type: string
+          required: true
+          examples:
+            subject:
+              description: Valid Pilot policy
+              value: TSR:insertSchema
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPolicy"
+              examples:
+                Success:
+                  value:
+                    subject: "0x69e48d89bf5e09588E858D757323b4abBBB3f814"
+                    policyName: "TSR:insertSchema"
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {policyId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {policyId} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Policy Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          $ref: "#/components/responses/500"
+  /trusted-policies-registry/v3/abi:
+    get:
+      operationId: get-abi
+      summary: Get ABI
+      description: Returns the ABI of TPR SC v3.
+      tags:
+        - ABI
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                description: The ABI of TPR SC v3.
+  /trusted-policies-registry/v3/jsonrpc:
+    post:
+      operationId: post-jsonrpc
+      summary: JSON-RPC API
+      description: |
+        The JSON-RPC API provides methods assisting the construction of blockchain transactions and
+        interaction with the ledger.
+      tags:
+        - JSON-RPC
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        description: |
+          The body follows the
+          [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification).
+
+          It requires the following fields:
+
+          - **jsonrpc**: must be exactly "2.0"
+          - **method**: method to be invoked
+          - **params**: method parameters
+          - **id**: identifier established by the client
+
+          ### API Methods
+
+          #### insertPolicy
+
+          Call to build an unsigned transaction to insert a policy in the registry.
+          This method requires an access token with "tpr_write" scope and the OPERATOR role in the
+          Trusted Policies Registry.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **policyName**: name of the policy.
+          - **description**: description.
+
+          #### updatePolicy
+
+          Call to build an unsigned transaction to update a policy.
+          This method requires an access token with "tpr_write" scope and the OPERATOR role in the
+          Trusted Policies Registry.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **policyId**: Policy ID
+          - **policyName**: Policy Name
+          - **description**: description.
+
+          Use either `policyId` OR `policyName` to identify the policy, but not both.
+
+          #### deactivatePolicy
+
+          Call to build an unsigned transaction to deactivate a policy in the registry.
+          This method requires an access token with "tpr_write" scope and the OPERATOR role in the
+          Trusted Policies Registry.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **policyId**: ID of the policy to deactivate
+          - **policyName**: Policy Name
+
+          Use either `policyId` OR `policyName` to identify the policy, but not both.
+
+          #### activatePolicy
+
+          Call to build an unsigned transaction to activate a policy in the registry.
+          This method requires an access token with "tpr_write" scope and the OPERATOR role in the
+          Trusted Policies Registry.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **policyId**: ID of the policy to activate
+          - **policyName**: Policy Name
+
+          Use either `policyId` OR `policyName` to identify the policy, but not both.
+
+          #### insertUserAttributes
+
+          Call to build an unsigned transaction to insert user attributes in the registry.
+          This method requires an access token with "tpr_write" scope and the OPERATOR role in the
+          Trusted Policies Registry.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **user**: user address
+          - **attributes**: attribute names
+
+          #### deleteUserAttribute
+
+          Call to build an unsigned transaction to delete an user attribute in the registry.
+          This method requires an access token with "tpr_write" scope and the OPERATOR role in the
+          Trusted Policies Registry.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **user**: user address
+          - **attribute**: attribute name
+
+          #### sendSignedTransaction
+
+          Call to send a signed transaction to the blockchain.
+        content:
+          application/json:
+            schema:
+              required:
+                - jsonrpc
+                - id
+                - method
+                - params
+              type: object
+              properties:
+                jsonrpc:
+                  description: Must be exactly "2.0"
+                  type: string
+                method:
+                  description: Method that needs to be invoked
+                  type: string
+                params:
+                  description: Array of parameters
+                  type: array
+                  items:
+                    type: object
+                id:
+                  description: Identifier established by the client
+                  type: integer
+                  example: 1
+            examples:
+              Build tx to insertPolicy:
+                value:
+                  jsonrpc: "2.0"
+                  method: insertPolicy
+                  id: 1
+                  params:
+                    - from: "0x6bd81E8CaA368CC196d573a26F1BE6c0753aC6e6"
+                      policyName: policy-test-237a346cd80aea1afb21d66ce39f7695
+                      description: description-test-98efbd91f1c40d254f4fd699a3f7b9fa
+              Build tx to updatePolicy (by policyId):
+                value:
+                  jsonrpc: "2.0"
+                  method: updatePolicy
+                  id: 1
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      policyId: "1"
+                      policyName: policy-test-0245fd52e9606e375ffe7d46718d60c8
+                      description: description-test-867fc5181e2a0df61094cb565cf18d96
+              Build tx to deactivatePolicy (by policyId):
+                value:
+                  jsonrpc: "2.0"
+                  method: deactivatePolicy
+                  id: 1
+                  params:
+                    - from: "0x6bd81E8CaA368CC196d573a26F1BE6c0753aC6e6"
+                      policyId: "1"
+              Build tx to activatePolicy (by policyId):
+                value:
+                  jsonrpc: "2.0"
+                  method: activatePolicy
+                  id: 1
+                  params:
+                    - from: "0x6bd81E8CaA368CC196d573a26F1BE6c0753aC6e6"
+                      policyId: "1"
+              Build tx to updatePolicy (by policyName):
+                value:
+                  jsonrpc: "2.0"
+                  method: updatePolicy
+                  id: 1
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      policyName: "TSR:insertSchema"
+                      description: description-test-867fc5181e2a0df61094cb565cf18d96
+              Build tx to deactivatePolicy (by policyName):
+                value:
+                  jsonrpc: "2.0"
+                  method: deactivatePolicy
+                  id: 1
+                  params:
+                    - from: "0x6bd81E8CaA368CC196d573a26F1BE6c0753aC6e6"
+                      policyName: "TSR:insertSchema"
+              Build tx to activatePolicy (by policyName):
+                value:
+                  jsonrpc: "2.0"
+                  method: activatePolicy
+                  id: 1
+                  params:
+                    - from: "0x6bd81E8CaA368CC196d573a26F1BE6c0753aC6e6"
+                      policyName: "TSR:insertSchema"
+              Build tx to insertUserAttributes:
+                value:
+                  jsonrpc: "2.0"
+                  method: insertUserAttributes
+                  id: 1
+                  params:
+                    - from: "0x6bd81E8CaA368CC196d573a26F1BE6c0753aC6e6"
+                      user: "0x5B740B7aB0A383F6F03579B90e591B4B06a81BF6"
+                      attributes:
+                        - TSR:insertSchema
+                        - TAR:insertApp
+              Build tx to deleteUserAttribute:
+                value:
+                  jsonrpc: "2.0"
+                  method: deleteUserAttribute
+                  id: 1
+                  params:
+                    - from: "0x6bd81E8CaA368CC196d573a26F1BE6c0753aC6e6"
+                      user: "0x5B740B7aB0A383F6F03579B90e591B4B06a81BF6"
+                      attribute: TSR:insertSchema
+              Send Transaction:
+                description: Call to send a signed transaction to the blockchain.
+                value:
+                  jsonrpc: "2.0"
+                  method: sendSignedTransaction
+                  id: 1
+                  params:
+                    - protocol: eth
+                      unsignedTransaction:
+                        from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                        to: "0xFde86148db58f57787C06BeAf63a9c3f789357b3"
+                        data: "0x0000..."
+                        nonce: "0x00"
+                        chainId: "0x1b3b"
+                        gasLimit: "0x10000"
+                        gasPrice: "0x00"
+                        value: "0x00"
+                      r: "0x..."
+                      s: "0x..."
+                      v: "0x..."
+                      signedRawTransaction: "--- signed raw transaction ---"
+      responses:
+        "200":
+          description: Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonRpcResponse"
+              examples:
+                Build tx:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    result:
+                      from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      to: "0xFde86148db58f57787C06BeAf63a9c3f789357b3"
+                      data: "0x0000..."
+                      nonce: "0x00"
+                      chainId: "0x1b3b"
+                      gasLimit: "0x10000"
+                      gasPrice: "0x00"
+                      value: "0x00"
+                Send Transaction:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    result: "0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Request:
+                  $ref: "#/components/examples/BadRequest"
+components:
+  schemas:
+    Links:
+      title: Links
+      type: object
+      description: Links model used for pagination.
+      properties:
+        first:
+          type: string
+          description: Hyperlink to the first page.
+        prev:
+          type: string
+          description: Hyperlink to the previous page.
+        next:
+          type: string
+          description: Hyperlink to the next page.
+        last:
+          type: string
+          description: Hyperlink to the last page.
+    User:
+      title: User
+      type: object
+      description: User data model
+      properties:
+        user:
+          type: string
+          description: User address
+        attributes:
+          description: Set of attributes
+          type: array
+          items:
+            type: string
+    Subject:
+      title: User
+      type: object
+      description: User data model
+      properties:
+        user:
+          type: string
+          description: User address
+    UserPolicy:
+      title: User
+      type: object
+      description: User data model
+      properties:
+        policyName:
+          type: string
+          description: Policy name
+        user:
+          type: string
+          description: User address
+    Policy:
+      title: Policy
+      type: object
+      description: Policy data model
+      properties:
+        policyId:
+          type: string
+          description: Unique policy ID
+        description:
+          type: string
+          description: policy description
+        policyName:
+          type: string
+          description: Name of the policy
+        status:
+          type: boolean
+          description: Status of the policy (false = inactive, true = active)
+    JsonRpcResponse:
+      title: JSON-RPC Response
+      type: object
+      properties:
+        jsonrpc:
+          description: Must be exactly "2.0"
+          type: string
+        id:
+          description: Same identifier established by the client in the call
+          type: integer
+        result:
+          description: Result of the call
+          oneOf:
+            - type: object
+            - type: string
+    ProblemDetails:
+      title: Problem Details
+      description: A [Problem Details](https://datatracker.ietf.org/doc/html/rfc7807) object.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the problem type. When dereferenced, it SHOULD provide human-readable documentation for the problem type.
+          default: about:blank
+        title:
+          type: string
+          description: A short summary of the problem type.
+          example: Internal Server Error
+        status:
+          type: integer
+          format: int32
+          description: |
+            The HTTP status code generated by the origin server for this occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          example: 500
+        detail:
+          type: string
+          description: |
+            A human readable explanation specific to this occurrence of the problem.
+          example: Connection timeout
+        instance:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the specific occurrence of the problem. It may or may
+            not yield further information if dereferenced.
+  responses:
+    "400":
+      description: Bad Request
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            Bad Request:
+              $ref: "#/components/examples/BadRequest"
+    "500":
+      description: Internal Error
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            Internal Server Error:
+              $ref: "#/components/examples/InternalError"
+  examples:
+    BadRequest:
+      value:
+        title: Bad Request
+        status: 400
+        detail: Bad request.
+    NotFound:
+      value:
+        title: Not found
+        status: 404
+        detail: Not found
+    InternalError:
+      value:
+        title: Internal Server Error
+        status: 500
+        detail: The server encountered an internal error and was unable to process your request.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+  - url: http://localhost
+    description: Local Computer Environment
+  - url: https://api-test.ebsi.eu
+    description: EBSI Test Environment
+  - url: https://api-pilot.ebsi.eu
+    description: EBSI Pilot Environment
+  - url: https://api-conformance.ebsi.eu
+    description: EBSI Conformance Environment

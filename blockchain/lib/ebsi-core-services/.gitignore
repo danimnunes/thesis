@@ -1,0 +1,30 @@
+# Common
+.pnpm-store
+build
+cache
+coverage
+dist
+node_modules
+.env*.local
+
+# Nx
+.nx/cache
+.nx/workspace-data
+
+# Manifest created by Nx
+affected.yaml
+
+# Assets built by hardhat
+contracts/*/artifacts
+contracts/*/src
+
+# Subgraphs
+subgraphs/*/subgraph.yaml
+subgraphs/*/build
+subgraphs/*/generated
+subgraphs/*/tests/.bin
+subgraphs/*/tests/.docker
+subgraphs/*/tests/.latest.json
+
+# Tests
+tests/data

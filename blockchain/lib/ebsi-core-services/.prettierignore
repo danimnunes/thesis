@@ -1,0 +1,13 @@
+.pnpm-store
+pnpm-lock.yaml
+artifacts
+cache
+coverage*
+build
+dist
+node_modules
+contracts/*/src
+subgraphs/*/generated
+.nx/cache
+.nx/workspace-data
+tests/data

@@ -1,0 +1,48 @@
+{
+  "name": "@ebsiint-sc/bootstrap-v2",
+  "private": true,
+  "version": "2.0.0-rc.8",
+  "license": "EUPL-1.2",
+  "scripts": {
+    "clean": "rimraf artifacts cache src dist",
+    "build": "pnpm run compile",
+    "compile": "hardhat compile && pnpm exec tsc --project tsconfig.build.json && copyfiles -f src/types/hardhat.d.ts dist",
+    "lint": "pnpm run lint:prettier && pnpm run lint:eslint && pnpm run lint:sol",
+    "lint:prettier": "prettier . --check && pnpm exec prettier --list-different --plugin=prettier-plugin-solidity \"contracts/**/*.sol\"",
+    "lint:write": "prettier . --write && pnpm exec prettier --write --plugin=prettier-plugin-solidity \"contracts/**/*.sol\"",
+    "lint:eslint": "eslint .",
+    "lint:sol": "solhint \"contracts/**/*.sol\"",
+    "setup": "exit 0",
+    "test": "hardhat test",
+    "test:unit": "pnpm run test",
+    "test:ci": "hardhat compile && hardhat test"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "5.4.0"
+  },
+  "devDependencies": {
+    "@gnosis-guild/typechain-ethers-v6": "0.5.5",
+    "@gnosis-guild/typechain-hardhat": "9.2.2",
+    "@nomicfoundation/hardhat-ethers": "3.1.0",
+    "@nomiclabs/hardhat-solhint": "4.1.2",
+    "@openzeppelin/hardhat-upgrades": "3.9.1",
+    "@types/mocha": "10.0.10",
+    "@types/node": "24.12.0",
+    "ethers": "6.16.0",
+    "hardhat": "2.26.1",
+    "hardhat-abi-exporter": "2.11.0",
+    "typechain": "8.3.2"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/artifacts",
+          "{projectRoot}/cache/validations.json",
+          "{projectRoot}/dist",
+          "{projectRoot}/src"
+        ]
+      }
+    }
+  }
+}

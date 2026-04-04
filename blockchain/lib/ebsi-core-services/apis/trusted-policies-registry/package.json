@@ -1,0 +1,6 @@
+{
+  "name": "@ebsiint-api/trusted-policies-registry-api-v2",
+  "private": true,
+  "version": "2.0.0-rc.15",
+  "license": "EUPL-1.2"
+}

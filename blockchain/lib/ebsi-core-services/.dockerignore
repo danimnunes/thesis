@@ -1,0 +1,35 @@
+**/node_modules
+**/.env*.local
+
+**/*.md
+**/LICENSE.txt
+**/LICENSES.txt
+**/Dockerfile
+**/.trivyignore.yaml
+.nx
+.pnpm-store
+
+## APIs
+apis/*/coverage
+apis/*/dist
+
+## Contracts
+contracts/admin-scripts
+contracts/deuss
+contracts/*/artifacts
+contracts/*/cache
+contracts/*/dist
+contracts/*/src
+contracts/*/scripts
+contracts/*/tests
+
+## Subgraphs
+subgraphs/*/subgraph.yaml
+subgraphs/*/build
+subgraphs/*/generated
+subgraphs/*/tests/.bin
+subgraphs/*/tests/.docker
+subgraphs/*/tests/.latest.json
+
+## Tests
+tests

@@ -1,0 +1,7 @@
+fhirpathpy
+pycryptodome
+phe
+pytest
+psycopg2-binary
+mysql-connector-python
+web3

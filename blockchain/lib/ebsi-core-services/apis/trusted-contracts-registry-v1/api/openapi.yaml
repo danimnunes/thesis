@@ -1,0 +1,463 @@
+openapi: 3.1.0
+info:
+  title: Trusted Contracts Registry API v1
+  version: 1.0.0
+  description: |
+    Trusted Contracts Registry (TCR) is an on-chain registry storing metadata of the deployed smart contracts.
+  contact:
+    name: EBSI Support - Service Desk
+    url: https://ec.europa.eu/digital-building-blocks/tracker/plugins/servlet/desk/portal/11
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/page/eupl-text-11-12
+paths:
+  /trusted-contracts-registry/v1/contracts:
+    get:
+      operationId: get-contracts
+      summary: List contracts
+      description: Returns a list of contracts.
+      tags:
+        - Contract
+      parameters:
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: Absolute path to the collection (consult)
+                  items:
+                    type: array
+                    description: List of contracts
+                    items:
+                      type: object
+                      properties:
+                        address:
+                          type: string
+                          description: The contract address
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items across all pages.
+                  pageSize:
+                    type: integer
+                    description: |
+                      Maximum number of items per page. For the last page, its value should be
+                      independent of the number of actually returned items.
+                  links:
+                    $ref: "#/components/schemas/Links"
+              example:
+                self: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/contracts?page[after]=1&page[size]=10
+                items:
+                  - address: "0x61c36a8d610163660E21a8b7359e1Cac0C9133e1"
+                    href: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/contracts/0x61c36a8d610163660E21a8b7359e1Cac0C9133e1
+                  - address: "0x23dB4a08f2272df049a4932a4Cc3A6Dc1002B33E"
+                    href: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/contracts/0x23dB4a08f2272df049a4932a4Cc3A6Dc1002B33E
+                  - address: "0x8EFa1819Ff5B279077368d44B593a4543280e402"
+                    href: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/contracts/0x8EFa1819Ff5B279077368d44B593a4543280e402
+                total: 3
+                pageSize: 10
+                links:
+                  first: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/contracts?page[after]=1&page[size]=10
+                  prev: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/contracts?page[after]=1&page[size]=10
+                  next: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/contracts?page[after]=1&page[size]=10
+                  last: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/contracts?page[after]=10&page[size]=10
+        "400":
+          description: Bad Request Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: '["page[size] must not be greater than 50"]'
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-contracts-registry/v1/contracts/{address}:
+    get:
+      tags:
+        - Contract
+      summary: Get a contract
+      description: Gets the contract corresponding to the address.
+      operationId: get-contract
+      parameters:
+        - in: path
+          name: address
+          description: |
+            The Ethereum address of the contract.
+          required: true
+          schema:
+            type: string
+          example: "0x61c36a8d610163660E21a8b7359e1Cac0C9133e1"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contract"
+              examples:
+                Contract:
+                  value:
+                    address: "0x61c36a8d610163660E21a8b7359e1Cac0C9133e1"
+                    deployer: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+                    deployerDID: "did:ebsi:zqz4ibiG9bWhPBiebPeeGVB"
+                    deploymentTimestamp: 1760600272
+                    isActive: true
+                    templateId: "0x957cef8a6ccfa45ea37ec9976fa2cdeb916d96039d6dac5bd68e37284bc187f4"
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {address} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: '["address must be an Ethereum address"]'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Contract Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-contracts-registry/v1/templates:
+    get:
+      operationId: get-templates
+      summary: List templates
+      description: Returns a list of templates.
+      tags:
+        - Template
+      parameters:
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: Absolute path to the collection (consult)
+                  items:
+                    type: array
+                    description: List of templates
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: The template ID
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items across all pages.
+                  pageSize:
+                    type: integer
+                    description: |
+                      Maximum number of items per page. For the last page, its value should be
+                      independent of the number of actually returned items.
+                  links:
+                    $ref: "#/components/schemas/Links"
+              example:
+                self: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/templates?page[after]=1&page[size]=10
+                items:
+                  - id: "0x8c3bd36dd8151582a4d36d259a10c0642308d4747fe28a2575e466d9fbc54e7e"
+                    href: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/templates/0x8c3bd36dd8151582a4d36d259a10c0642308d4747fe28a2575e466d9fbc54e7e
+                  - id: "0xeef39c99eb11fd9841d5c148fd344161b65e0341d114b63ad88202d0f6d11029"
+                    href: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/templates/0xeef39c99eb11fd9841d5c148fd344161b65e0341d114b63ad88202d0f6d11029
+                  - id: "0x836bdbac210090fda63cf0b8d0976a475c0a7efe883afc054dc5191753eb559d"
+                    href: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/templates/0x836bdbac210090fda63cf0b8d0976a475c0a7efe883afc054dc5191753eb559d
+                total: 3
+                pageSize: 10
+                links:
+                  first: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/templates?page[after]=1&page[size]=10
+                  prev: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/templates?page[after]=1&page[size]=10
+                  next: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/templates?page[after]=1&page[size]=10
+                  last: https://api-pilot.ebsi.eu/trusted-contracts-registry/v1/templates?page[after]=10&page[size]=10
+        "400":
+          description: Bad Request Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: '["page[size] must not be greater than 50"]'
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-contracts-registry/v1/templates/{id}:
+    get:
+      tags:
+        - Template
+      summary: Get a template
+      description: Gets the template corresponding to the ID.
+      operationId: get-template
+      parameters:
+        - in: path
+          name: id
+          description: |
+            The ID of the template.
+          required: true
+          schema:
+            type: string
+          example: "0x8c3bd36dd8151582a4d36d259a10c0642308d4747fe28a2575e466d9fbc54e7e"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+              examples:
+                Template:
+                  value:
+                    auditURI: "https://audit.example.com/sample-contract"
+                    beaconAddress: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"
+                    contractHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+                    id: "0x8c3bd36dd8151582a4d36d259a10c0642308d4747fe28a2575e466d9fbc54e7e"
+                    initSelector: "0xd1ec8bf7"
+                    isActive: true
+                    name: "SampleContract-495e006501ff64fc8c325a0da420d19b"
+                    repoURI: "https://github.com/example/sample-contract"
+                    storageLayoutHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+                    version: "1.0.0"
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {id} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: '["id must be 32 bytes encoded in hexadecimal and start with 0x"]'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Contract Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+components:
+  schemas:
+    ProblemDetails:
+      title: Problem Details
+      description: A [Problem Details](https://datatracker.ietf.org/doc/html/rfc7807) object.
+      type: object
+      x-examples:
+        Not Enough Credit:
+          type: https://example.com/probs/out-of-credit
+          title: You do not have enough credit.
+          detail: Your current balance is 30, but that costs 50.
+          instance: /account/12345/msgs/abc
+      properties:
+        type:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the problem type. When dereferenced, it SHOULD provide
+            human-readable documentation for the problem type.
+          default: about:blank
+        title:
+          type: string
+          description: |
+            A short summary of the problem type.
+          example: Internal Server Error
+        status:
+          type: integer
+          format: int32
+          description: |
+            The HTTP status code generated by the origin server for this occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          example: 500
+        detail:
+          type: string
+          description: |
+            A human readable explanation specific to this occurrence of the problem.
+          example: Connection timeout
+        instance:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the specific occurrence of the problem. It may or may
+            not yield further information if dereferenced.
+    Links:
+      title: Links
+      description: Links model used for pagination
+      type: object
+      properties:
+        last:
+          type: string
+          description: URI of the last page
+        prev:
+          type: string
+          description: URI of the previous page
+        next:
+          type: string
+          description: URI of the next page
+        first:
+          type: string
+          description: URI of the first page
+    Contract:
+      title: Contract
+      description: Trusted Contracts Registry Contract
+      type: object
+      properties:
+        deployer:
+          description: Deployer's Ethereum address
+          type: string
+        deployerDID:
+          description: The deployer's DID
+          type: string
+        deploymentTimestamp:
+          description: Deployment timestamp
+          type: number
+        isActive:
+          type: boolean
+          description: Whether the contract is active or not
+        templateId:
+          description: Template ID
+          type: string
+    Template:
+      title: Template
+      description: Trusted Contracts Registry template
+      type: object
+      properties:
+        auditURI:
+          description: Audit URI
+          type: string
+        beaconAddress:
+          description: Beacon address
+          type: string
+        contractHash:
+          description: Contract hash
+          type: string
+        id:
+          description: Template ID
+          type: string
+        initSelector:
+          description: Init selector
+          type: string
+        isActive:
+          type: boolean
+          description: Whether the contract is active or not
+        name:
+          description: Template name
+          type: string
+        repoURI:
+          description: Repository URI
+          type: string
+        storageLayoutHash:
+          description: Storage layout hash
+          type: string
+        version:
+          description: Template version
+          type: string
+  examples:
+    BadRequest:
+      value:
+        title: Bad request
+        status: 400
+        detail: Bad request
+    NotFound:
+      value:
+        title: Not found
+        status: 404
+        detail: Not found
+    InternalError:
+      value:
+        title: Internal error
+        status: 500
+        detail: Internal error
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+  - url: http://localhost
+    description: Local Computer Environment
+  - url: https://api-test.ebsi.eu
+    description: EBSI Test Environment
+  - url: https://api-pilot.ebsi.eu
+    description: EBSI Pilot Environment
+  - url: https://api-conformance.ebsi.eu
+    description: EBSI Conformance Environment

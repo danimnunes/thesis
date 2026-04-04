@@ -1,0 +1,37 @@
+services:
+  # Cloud Provider 1 (postgres)
+  postgres_provider:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: well_repo_a
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+
+  # Cloud Provider 2 (mysql)
+  mysql_provider:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: well_repo_b
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "3306:3306"
+
+  # Blockchain local (Foundry Anvil)
+  blockchain_node:
+    image: ghcr.io/foundry-rs/foundry:latest
+    platform: linux/amd64
+    ports:
+      - "8545:8545"
+    entrypoint: ["anvil", "--host", "0.0.0.0"]
+
+  # (Client)
+  data_client:
+    build: ./client
+    volumes:
+      - ./client:/app
+      - ./synthea_data:/data
+    depends_on:
+      - postgres_provider
+      - mysql_provider
+      - blockchain_node

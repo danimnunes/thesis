@@ -1,0 +1,277 @@
+specVersion: 1.2.0
+schema:
+  file: ./schema.graphql
+dataSources:
+  # DID Registry SC v5
+  - kind: ethereum/contract
+    name: DidRegistry
+    network: besu
+    source:
+      abi: DidRegistry
+      address: "{{ didRegistryAddress }}"
+      # prettier-ignore
+      startBlock: {{ didRegistryStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - DidDocument
+        - ControllerRelationship
+        - VerificationRelationship
+        - VerificationMethod
+        - DidDocumentEvent
+      abis:
+        - name: DidRegistry
+          # prettier-ignore
+          file: {{ &didRegistryAbi }}
+      eventHandlers:
+        - event: DidDocumentInserted(string,string,string,bytes,bool,uint256,uint256)
+          handler: handleDidDocumentInsertedEvent
+        - event: BaseDocumentUpdated(string,string)
+          handler: handleBaseDocumentUpdatedEvent
+        - event: ControllerAdded(string,string)
+          handler: handleControllerAddedEvent
+        - event: ControllerRevoked(string,string)
+          handler: handleControllerRevokedEvent
+        - event: VerificationMethodAdded(string,string,bytes,bool)
+          handler: handleVerificationMethodAddedEvent
+        - event: VerificationRelationshipAdded(string,string,string,uint256,uint256)
+          handler: handleVerificationRelationshipAddedEvent
+        - event: VerificationMethodRevoked(string,string,uint256)
+          handler: handleVerificationMethodRevokedEvent
+        - event: VerificationMethodExpired(string,string,uint256)
+          handler: handleVerificationMethodExpiredEvent
+        - event: VerificationMethodRolled(string,string,bytes,bool,uint256,uint256,string,uint256)
+          handler: handleVerificationMethodRolledEvent
+      file: ./src/did-registry-v5/mappings.ts
+  # Timestamp SC v3
+  - kind: ethereum
+    name: Timestamp
+    network: besu
+    source:
+      abi: Timestamp
+      address: "{{ timestampAddress }}"
+      # prettier-ignore
+      startBlock: {{ timestampStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - HashAlgorithm
+        - TimestampedHash
+        - RecordVersion
+        - RecordOwner
+        - Record
+      abis:
+        - name: Timestamp
+          # prettier-ignore
+          file: {{ &timestampAbi }}
+      eventHandlers:
+        - event: AddNewHashAlgo(indexed uint256,indexed string,uint256,string,uint8,string)
+          handler: handleAddNewHashAlgoEvent
+        - event: UpdateHashAlgo(indexed uint256,indexed string,string,uint256,string,uint8,string)
+          handler: handleUpdateHashAlgoEvent
+        - event: TimestampedHashes(bytes32[],uint256[],bytes[],bytes[])
+          handler: handleTimestampedHashesEvent
+        - event: TimestampVersionHashes(bytes,bytes32[],bytes)
+          handler: handleTimestampVersionHashesEvent
+        - event: RecordedHashes(indexed bytes32,bytes32[],bytes32)
+          handler: handleRecordedHashesEvent
+        - event: RecordVersionInfo(bytes32,bytes32,uint256)
+          handler: handleRecordVersionInfoEvent
+        - event: TimestampIdDetached(bytes32)
+          handler: handleTimestampIdDetachedEvent
+        - event: RecordOwnerAdded(string)
+          handler: handleRecordOwnerAddedEvent
+        - event: OwnerIdRevoked(string)
+          handler: handleOwnerIdRevokedEvent
+      file: ./src/timestamp-v4/mappings.ts
+  # TNT SC v1
+  - kind: ethereum
+    name: TrackAndTrace
+    network: besu
+    source:
+      abi: TrackAndTrace
+      address: "{{ trackAndTraceAddress }}"
+      # prettier-ignore
+      startBlock: {{ trackAndTraceStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      abis:
+        - name: TrackAndTrace
+          # prettier-ignore
+          file: {{ &trackAndTraceAbi }}
+      entities:
+        - Creator
+        - Operator
+        - Document
+        - Invitation
+        - DocumentEvent
+      eventHandlers:
+        - event: DidEbsiAuthorised(string,bool)
+          handler: handleDidEbsiAuthorisedEvent
+        - event: DocumentCreated(bytes32,string,string,uint256,uint8,bytes32)
+          handler: handleDocumentCreatedEvent
+        - event: DocumentRemoved(bytes32)
+          handler: handleDocumentRemovedEvent
+        - event: AccessGranted(bytes32,bytes,bytes,uint8)
+          handler: handleAccessGrantedEvent
+        - event: AccessRevoked(bytes32,bytes,bytes)
+          handler: handleAccessRevokedEvent
+        - event: EventWritten(bytes32,bytes32,bytes,string,string,uint256,uint8,bytes32)
+          handler: handleEventWrittenEvent
+      file: ./src/track-and-trace-v1/mappings.ts
+  # TCR - ProxyFactory SC v1
+  - kind: ethereum
+    name: ProxyFactory
+    network: besu
+    source:
+      abi: ProxyFactory
+      address: "{{ proxyFactoryAddress }}"
+      # prettier-ignore
+      startBlock: {{ proxyFactoryStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      abis:
+        - name: ProxyFactory
+          # prettier-ignore
+          file: {{ &proxyFactoryAbi }}
+      entities:
+        - ContractProxy
+      eventHandlers:
+        - event: ProxyDeployed(indexed address,indexed bytes32,indexed address,string,bytes,uint256)
+          handler: handleProxyDeployedEvent
+      file: ./src/trusted-contracts-registry-v1/proxy-factory/mappings.ts
+  # TCR - ProxyTemplateRegistry SC v1
+  - kind: ethereum
+    name: ProxyTemplateRegistry
+    network: besu
+    source:
+      abi: ProxyTemplateRegistry
+      address: "{{ proxyTemplateRegistryAddress }}"
+      # prettier-ignore
+      startBlock: {{ proxyTemplateRegistryStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      abis:
+        - name: ProxyTemplateRegistry
+          # prettier-ignore
+          file: {{ &proxyTemplateRegistryAbi }}
+      entities:
+        - ContractTemplate
+      eventHandlers:
+        - event: TemplateAdded(indexed bytes32,string,string)
+          handler: handleTemplateAddedEvent
+        - event: TemplateDeprecated(indexed bytes32)
+          handler: handleTemplateDeprecatedEvent
+        - event: TemplateUpdated(indexed bytes32)
+          handler: handleTemplateUpdatedEvent
+      file: ./src/trusted-contracts-registry-v1/proxy-template-registry/mappings.ts
+  # TIR SC v5
+  - kind: ethereum
+    name: TrustedIssuersRegistry
+    network: besu
+    source:
+      abi: TrustedIssuersRegistry
+      address: "{{ trustedIssuersRegistryAddress }}"
+      # prettier-ignore
+      startBlock: {{ trustedIssuersRegistryStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - DidDocument
+        - Issuer
+        - IssuerAttribute
+        - IssuerAttributeRevision
+        - IssuerProxy
+      abis:
+        - name: TrustedIssuersRegistry
+          # prettier-ignore
+          file: {{ &trustedIssuersRegistryAbi }}
+      eventHandlers:
+        - event: AddAttributeRevision(string,indexed bytes32,indexed bytes32,uint8)
+          handler: handleAddAttributeRevisionEvent
+        # Support old event name with typo (required on testnet)
+        - event: AddAtrributeRevision(string,indexed bytes32,indexed bytes32,uint8)
+          handler: handleAddAttributeRevisionEvent
+        - event: AddIssuerProxy(string,indexed bytes32)
+          handler: handleAddIssuerProxyEvent
+        - event: UpdateIssuerProxy(string,indexed bytes32)
+          handler: handleUpdateIssuerProxyEvent
+        - event: RemoveIssuerProxy(string,indexed bytes32)
+          handler: handleRemoveIssuerProxyEvent
+      file: ./src/trusted-issuers-registry-v5/mappings.ts
+  # TPR SC v3
+  - kind: ethereum
+    name: TrustedPoliciesRegistry
+    network: besu
+    source:
+      abi: TrustedPoliciesRegistry
+      address: "{{ trustedPoliciesRegistryAddress }}"
+      # prettier-ignore
+      startBlock: {{ trustedPoliciesRegistryStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Policy
+        - PolicyById
+        - PolicySubject
+      abis:
+        - name: TrustedPoliciesRegistry
+          # prettier-ignore
+          file: {{ &trustedPoliciesRegistryAbi }}
+      eventHandlers:
+        - event: PolicyInserted(indexed uint256,string,string)
+          handler: handlePolicyInserted
+        - event: PolicyUpdated(indexed uint256,string,string)
+          handler: handlePolicyUpdated
+        - event: PolicyDeactivated(indexed uint256)
+          handler: handlePolicyDeactivated
+        - event: PolicyActivated(indexed uint256)
+          handler: handlePolicyActivated
+        - event: UserAttributeInserted(address,string)
+          handler: handleUserAttributeInserted
+        - event: UserAttributeDeleted(address,string)
+          handler: handleUserAttributeDeleted
+      file: ./src/trusted-policies-registry-v3/mappings.ts
+  # TSR SC v3
+  - kind: ethereum
+    name: TrustedSchemasRegistry
+    network: besu
+    source:
+      abi: TrustedSchemasRegistry
+      address: "{{ trustedSchemasRegistryAddress }}"
+      # prettier-ignore
+      startBlock: {{ trustedSchemasRegistryStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Schema
+        - SchemaRevision
+        - SchemaMetadata
+      abis:
+        - name: TrustedSchemasRegistry
+          # prettier-ignore
+          file: {{ &trustedSchemasRegistryAbi }}
+      eventHandlers:
+        - event: SchemaInserted(indexed bytes,bytes,bytes,bytes32,bytes,bytes32)
+          handler: handleSchemaInsertedEvent
+        - event: SchemaUpdated(indexed bytes,bytes,bytes,bytes32,bytes,bytes32)
+          handler: handleSchemaUpdatedEvent
+        - event: MetadataUpdated(indexed bytes,bytes,bytes32,bytes,bytes32)
+          handler: handleMetadataUpdatedEvent
+      file: ./src/trusted-schemas-registry-v3/mappings.ts

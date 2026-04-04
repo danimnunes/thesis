@@ -1,0 +1,9 @@
+{
+  "proxyTemplateRegistryAddress": "0x0e2B593E38404700CC04369fabf7cA94EAf2E90C",
+  "proxyFactoryAddress": "0xf79FE16Eb0a68898Cd16A42E0cF9D7cA365F3A8C",
+  "didRegistryAddress": "0x26E603f6FdCfC007c7bdC5be5f2c91D2a64a32E7",
+  "policyRegistryAddress": "0x3d5edA0b5183e245bA9713B58834525EDfE46E90",
+  "beacon_MyContract_1.0.0": "0xD41E1faF7EeC3b6b794b0bFabd0393871fc7201a",
+  "implementation_MyContract_1.0.0": "0x00cB97ed995607AD47b65b90C665fBCB99636605",
+  "templateId_MyContract_1.0.0": "0x26f4341dc97b05c4a9bd0a2b673bcde2a7e7ec996db3f6efa5832a44020fd7ef"
+}

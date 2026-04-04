@@ -1,0 +1,1274 @@
+openapi: 3.1.0
+info:
+  title: Timestamp API v4
+  version: 4.0.0
+  description: |
+    Timestamp API is an EBSI core service that enables interaction with the TimeStamp Smart Contract to:
+    * timestamp hashes
+    * support timestamping records and versions (including linking timestamps)
+    * verify timestamps
+  contact:
+    name: EBSI Support - Service Desk
+    url: https://ec.europa.eu/digital-building-blocks/tracker/plugins/servlet/desk/portal/11
+  license:
+    name: "EUPL-1.2"
+    url: "https://joinup.ec.europa.eu/page/eupl-text-11-12"
+paths:
+  /timestamp/v4/hash-algorithms:
+    get:
+      operationId: get-hash-algorithms
+      summary: List hash algorithms
+      description: Returns a list of hash algorithms.
+      tags:
+        - Hash algorithms
+      parameters:
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: URI to hash algorithms
+                  items:
+                    type: array
+                    description: List of hash algorithms
+                    items:
+                      type: object
+                      properties:
+                        hashAlgorithmId:
+                          type: number
+                          description: ID of the hash algorithm
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items in a collection
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page
+                  links:
+                    $ref: "#/components/schemas/Links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/timestamp/v4/hash-algorithms?page[after]=3&page[size]=2
+                    items:
+                      - hashAlgorithmId: 4
+                        href: https://api-pilot.ebsi.eu/timestamp/v4/hash-algorithms/4
+                      - hashAlgorithmId: 5
+                        href: https://api-pilot.ebsi.eu/timestamp/v4/hash-algorithms/5
+                    total: 8
+                    pageSize: 2
+                    links:
+                      first: https://api-pilot.ebsi.eu/timestamp/v4/hash-algorithms?page[after]=1&page[size]=2
+                      prev: https://api-pilot.ebsi.eu/timestamp/v4/hash-algorithms?page[after]=2&page[size]=2
+                      next: https://api-pilot.ebsi.eu/timestamp/v4/hash-algorithms?page[after]=4&page[size]=2
+                      last: https://api-pilot.ebsi.eu/timestamp/v4/hash-algorithms?page[after]=42&page[size]=2
+        "400":
+          description: Bad Request Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: PageSize should not be greater than 50
+        "500":
+          description: Internal Server Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /timestamp/v4/hash-algorithms/{hashAlgorithmId}:
+    get:
+      operationId: get-hash-algorithm
+      summary: Get a hash algorithm
+      description: Returns a hash algorithm identified by its ID.
+      tags:
+        - Hash algorithms
+      parameters:
+        - name: hashAlgorithmId
+          in: path
+          schema:
+            type: string
+          example: "0"
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HashAlgorithm"
+              examples:
+                Success:
+                  value:
+                    outputLengthBits: 256
+                    ianaName: sha-256
+                    oid: "2.16.840.1.101.3.4.2.1"
+                    status: active
+                    multiHash: sha2-256
+        "400":
+          description: Bad Request
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {hashAlgorithmId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {hashAlgorithmId} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Hash algorithm Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /timestamp/v4/timestamps:
+    get:
+      operationId: get-timestamps
+      summary: List timestamps
+      description: Returns a list of timestamps.
+      tags:
+        - Timestamps
+      parameters:
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: URI to timestamps
+                  items:
+                    type: array
+                    description: List of timestamps
+                    items:
+                      type: object
+                      properties:
+                        timestampId:
+                          type: string
+                          description: |
+                            Multihash of the sha256 of the original hash, encoded in multibase
+                            base64url.
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items in a collection
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page
+                  links:
+                    $ref: "#/components/schemas/Links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/timestamp/v4/timestamps?page[after]=3&page[size]=2
+                    items:
+                      - timestampId: uEiCuezPKD4AhaK0LCCH85rrMSK-G-0M4Merd2ASZO-59HQ
+                        href: https://api-pilot.ebsi.eu/timestamp/v4/timestamps/uEiCuezPKD4AhaK0LCCH85rrMSK-G-0M4Merd2ASZO-59HQ
+                      - timestampId: uEiCw27hwe5frnhyPo_NDlptLth1oWZ_UdpcuVHYiA2vavg
+                        href: https://api-pilot.ebsi.eu/timestamp/v4/timestamps/uEiCuezPKD4AhaK0LCCH85rrMSK-G-0M4Merd2ASZO-59HQ
+                    total: 415
+                    pageSize: 2
+                    links:
+                      first: https://api-pilot.ebsi.eu/timestamp/v4/timestamps?page[after]=1&page[size]=2
+                      prev: https://api-pilot.ebsi.eu/timestamp/v4/timestamps?page[after]=2&page[size]=2
+                      next: https://api-pilot.ebsi.eu/timestamp/v4/timestamps?page[after]=4&page[size]=2
+                      last: https://api-pilot.ebsi.eu/timestamp/v4/timestamps?page[after]=208&page[size]=2
+        "400":
+          description: Bad Request Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: PageSize should not be greater than 50
+        "500":
+          description: Internal Server Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /timestamp/v4/timestamps/{timestampId}:
+    get:
+      operationId: get-timestamp
+      summary: Get a timestamp
+      description: Returns a timestamp identified by its ID.
+      tags:
+        - Timestamps
+      parameters:
+        - name: timestampId
+          description: |
+            Multihash of the sha256 of the original hash, encoded in multibase base64url.
+
+            ```
+            timestampId = multibase_base64url(multihash(sha256(original_hash)))
+            ```
+
+            Example: let's assume the original hash is a sha3-224 with the value
+            `0xb2a8e000d1f25778cecf6b29fc0e7f811fb5f4a3a8230585e9056921`.
+
+            It is stored in the smart contract with the timestamp ID
+            `0xb2a8e000d1f25778cecf6b29fc0e7f811fb5f4a3a8230585e9056921`, which corresponds to the
+            sha256 of the original hash.
+
+            The multihash representation of
+            `0xb2a8e000d1f25778cecf6b29fc0e7f811fb5f4a3a8230585e9056921` is
+            `EiCPQS4deZG8y1FXlG9sW1vDfMbpulXYTkn0HWj2OWd61A` (encoded in base64url).
+
+            At the API-level, the timestamp ID is then
+            `uEiCPQS4deZG8y1FXlG9sW1vDfMbpulXYTkn0HWj2OWd61A`, i.e. it's the multibase base64url
+            (prefix "u") encoded multihash.
+          in: path
+          schema:
+            type: string
+          examples:
+            timestampId:
+              description: Valid Pilot timestampId
+              value: uEiCyzskEVXTNJVok_wI3wHty3LIJ3Apz_4HDocgAUtKGjg
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Timestamp"
+              examples:
+                Success:
+                  value:
+                    hash: mE0BoK9lFXyC8pGx0XW6O/VuO8WBLMlS7KLx2bah55YH/VhaorawVrWFr/hMnbgBpR3vNSx8tA0A6MxtNmqNwjHaR
+                    timestampedBy: "0xb8d511d80D9Cc1cFAfa79973edE37278d8B1ebd7"
+                    blockNumber: 1880267
+                    timestamp: "2021-08-30T15:20:16.000Z"
+                    data: "0x7b2274657374223a3734327d"
+                    transactionHash: "0x125988a9a6a9a02da35981dee230e1900088ef7fc5064c1f1d2225ef2d2c53e6"
+        "400":
+          description: Bad Request
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {timestampId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {timestampId} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Hash algorithm Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /timestamp/v4/records:
+    get:
+      operationId: get-records
+      summary: List records
+      description: Returns a list of records.
+      tags:
+        - Records
+      parameters:
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+        - in: query
+          name: first-version
+          schema:
+            type: string
+          description: Filter records by first version hash
+          examples:
+            first-version:
+              description: Valid pilot first-version
+              value: "0xc44c79e0e1f1f4a61a580d3146c13657a6622fcc2f586c63297c76722a6049ff"
+        - in: query
+          name: owner
+          schema:
+            type: string
+          description: Filter records by owner address
+          examples:
+            owner:
+              description: Valid pilot owner
+              value: "0x8a5f8001e772b325cfc2898a51300b0afaf71b65"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: URI to records
+                  items:
+                    type: array
+                    description: List of records
+                    items:
+                      type: object
+                      properties:
+                        recordId:
+                          type: string
+                          description: ID of the record (multibase base64url encoded)
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items in a collection
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page
+                  links:
+                    $ref: "#/components/schemas/Links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/timestamp/v4/records?page[after]=1&page[size]=2
+                    items:
+                      - recordId: u6QSSvW57IyOocLlWQS3rB3w3qwXj4rTImwusvMkt9ZM
+                        href: https://api-pilot.ebsi.eu/timestamp/v4/records/u6QSSvW57IyOocLlWQS3rB3w3qwXj4rTImwusvMkt9ZM
+                    total: 1
+                    pageSize: 1
+                    links:
+                      first: https://api-pilot.ebsi.eu/timestamp/v4/records?page[after]=1&page[size]=2
+                      prev: https://api-pilot.ebsi.eu/timestamp/v4/records?page[after]=1&page[size]=2
+                      next: https://api-pilot.ebsi.eu/timestamp/v4/records?page[after]=1&page[size]=2
+                      last: https://api-pilot.ebsi.eu/timestamp/v4/records?page[after]=1&page[size]=2
+        "400":
+          description: Bad Request Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: PageSize should not be greater than 50
+        "500":
+          description: Internal Server Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /timestamp/v4/records/{recordId}:
+    get:
+      operationId: get-record
+      summary: Get a record
+      description: Returns a record identified by its ID.
+      tags:
+        - Records
+      parameters:
+        - in: path
+          name: recordId
+          schema:
+            type: string
+          description: Record ID (multibase base64url encoded)
+          examples:
+            recordId:
+              description: Valid Pilot multibase base64url encoded recordId
+              value: u6QSSvW57IyOocLlWQS3rB3w3qwXj4rTImwusvMkt9ZM
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Record"
+              examples:
+                Success:
+                  value:
+                    ownerIds:
+                      - "0x62165ec5d61..."
+                      - "0x654dv561165..."
+                      - "0x56e87f15a16..."
+                    revokedOwnerIds:
+                      - "0xa1565165ef1..."
+                    firstVersionTimestamps:
+                      - "0x1659411f..."
+                    lastVersionTimestamps:
+                      - "0x984651fa..."
+                    totalVersions: 4
+        "400":
+          description: Bad Request
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {versionId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {versionId} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Hash algorithm Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /timestamp/v4/records/{recordId}/versions:
+    get:
+      operationId: get-record-versions
+      summary: List a record's versions
+      description: Returns a list of versions of a given record.
+      tags:
+        - Records
+      parameters:
+        - in: path
+          name: recordId
+          schema:
+            type: string
+          examples:
+            recordId:
+              description: Valid Pilot multibase base64url encoded recordId
+              value: u6QSSvW57IyOocLlWQS3rB3w3qwXj4rTImwusvMkt9ZM
+          description: Record ID (multibase base64url encoded)
+          required: true
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: URI to versions
+                  items:
+                    type: array
+                    description: List of versions
+                    items:
+                      type: object
+                      properties:
+                        versionId:
+                          type: number
+                          description: ID of the version
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items in a collection
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page
+                  links:
+                    $ref: "#/components/schemas/Links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/timestamp/v4/records/u6QSSvW57IyOocLlWQS3rB3w3qwXj4rTImwusvMkt9ZM/versions?page[after]=1&page[size]=2
+                    items:
+                      - versionId: 0
+                        href: https://api-pilot.ebsi.eu/timestamp/v4/records/u6QSSvW57IyOocLlWQS3rB3w3qwXj4rTImwusvMkt9ZM/versions/0
+                    total: 1
+                    pageSize: 2
+                    links:
+                      first: https://api-pilot.ebsi.eu/timestamp/v4/records/u6QSSvW57IyOocLlWQS3rB3w3qwXj4rTImwusvMkt9ZM/versions?page[after]=1&page[size]=2
+                      prev: https://api-pilot.ebsi.eu/timestamp/v4/records/u6QSSvW57IyOocLlWQS3rB3w3qwXj4rTImwusvMkt9ZM/versions?page[after]=1&page[size]=2
+                      next: https://api-pilot.ebsi.eu/timestamp/v4/records/u6QSSvW57IyOocLlWQS3rB3w3qwXj4rTImwusvMkt9ZM/versions?page[after]=1&page[size]=2
+                      last: https://api-pilot.ebsi.eu/timestamp/v4/records/u6QSSvW57IyOocLlWQS3rB3w3qwXj4rTImwusvMkt9ZM/versions?page[after]=1&page[size]=2
+        "400":
+          description: Bad Request Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: PageSize should not be greater than 50
+        "500":
+          description: Internal Server Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /timestamp/v4/records/{recordId}/versions/{versionId}:
+    get:
+      operationId: get-record-version
+      summary: Get a version
+      description: Returns a record version identified by its version ID.
+      tags:
+        - Records
+      parameters:
+        - in: path
+          name: recordId
+          schema:
+            type: string
+          examples:
+            recordId:
+              description: Valid Pilot multibase base64url encoded recordId
+              value: u6QSSvW57IyOocLlWQS3rB3w3qwXj4rTImwusvMkt9ZM
+          description: Record ID (multibase base64url encoded)
+          required: true
+        - in: path
+          name: versionId
+          schema:
+            type: string
+          example: "0"
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Version"
+              examples:
+                Success:
+                  value:
+                    hashes:
+                      - "0x62165ec5d61..."
+                      - "0x654dv561165..."
+                      - "0x56e87f15a16..."
+                    info:
+                      - {
+                          "@context": "https://json-ld.org/contexts/person.jsonld",
+                          "@id": "http://dbpedia.org/resource/John_Lennon",
+                          "name": "John Lennon",
+                          "born": "1940-10-09",
+                          "spouse": "http://dbpedia.org/resource/Cynthia_Lennon",
+                        }
+                      - {
+                          "@context": "https://json-ld.org/contexts/person.jsonld",
+                          "@id": "http://dbpedia.org/resource/John_Lennon",
+                          "name": "John Lennon",
+                          "born": "1940-10-09",
+                          "spouse": "http://dbpedia.org/resource/Cynthia_Lennon",
+                        }
+        "400":
+          description: Bad Request
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {versionId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {versionId} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Hash algorithm Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /timestamp/v4/abi:
+    get:
+      operationId: get-abi
+      summary: Get ABI
+      description: Returns the ABI of Timestamp SC v4.
+      tags:
+        - ABI
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                description: The ABI of Timestamp SC v4.
+  /timestamp/v4/jsonrpc:
+    post:
+      operationId: post-jsonrpc
+      summary: JSON-RPC API
+      description: |
+        The JSON-RPC API provides methods assisting the construction of blockchain transactions for
+        Timestamp operations, and interaction with the ledger.
+      tags:
+        - JSON-RPC
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        description: |
+          The body follows the
+          [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification).
+
+          It requires the following fields:
+
+          - **jsonrpc**: must be exactly "2.0"
+          - **method**: method to be invoked
+          - **params**: method parameters
+          - **id**: identifier established by the client
+
+          ### API Methods
+
+          #### insertHashAlgorithm
+
+          Call to build an unsigned transaction to insert a new hash algorithm.
+          Requires admin rights.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **outputLength**: hash output length (in bits)
+          - **ianaName**: IANA name of the hash algorithm
+          - **oid**: object identifier (OID)
+          - **status**: status of the algorithm (1 = active, 2 = revoked)
+          - **multiHash**: multihash name
+
+          #### updateHashAlgorithm
+
+          Call to build an unsigned transaction to update a hash algorithm.
+          Requires admin rights.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **hashAlgorithmId**: ID of the hash algorithm to update
+          - **outputLength**: hash output length (in bits)
+          - **ianaName**: IANA name of the hash algorithm
+          - **oid**: object identifier (OID)
+          - **status**: status of the algorithm (1 = active, 2 = revoked)
+          - **multiHash**: multihash name
+
+          #### timestampHashes
+
+          Call to build an unsigned transaction to timestamp hashes. It's possible to insert up to
+          3 hashes in a single transaction.
+          Requires an access token with "timestamp_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **hashAlgorithmIds**: Array of hash algorithms ids used (up to 3)
+          - **hashValues**: Array of hashes (up to 3)
+          - **timestampData** (optional): Timestamp data. This field must be a JSON stringified and converted into hex string
+
+          #### timestampRecordHashes
+
+          Call to build an unsigned transaction to timestamp data and create a record of it with
+          some info. It's possible to insert up to 3 hashes in a single transaction.
+          Requires an access token with "timestamp_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **hashAlgorithmIds**: Array of hash algorithms ids used (up to 3)
+          - **hashValues**: Array of hashes (up to 3)
+          - **timestampData** (optional): Timestamp data. This field must be a JSON stringified and converted into hex string
+          - **versionInfo**: Version info. This field must be a JSON stringified and converted into hex string
+
+          #### timestampVersionHashes
+
+          Call to build an unsigned transaction to timestamp hashes and store them under the given
+          record. It's possible to insert up to 3 hashes in a single transaction. This method can
+          be called only by record owners.
+          Requires an access token with "timestamp_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **versionHash**: Version hash to update
+          - **hashAlgorithmIds**: Array of hash algorithms ids used (up to 3)
+          - **hashValues**: Array of hashes (up to 3)
+          - **timestampData** (optional): Timestamp data. This field must be a JSON stringified and converted into hex string
+          - **versionInfo**: Version info. This field must be a JSON stringified and converted into hex string
+
+          #### insertRecordOwner
+
+          Call to build an unsigned transaction to insert a record owner. This method can be called
+          only by record owners.
+          Requires an access token with "timestamp_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **recordId**: Record ID to update
+          - **ownerId**: Ethereum address of new owner
+          - **notBefore**: Point in time when the owner becomes valid. It should be defined in epoch time.
+          - **notAfter**: Point in time when the owner becomes invalid. It should be defined in epoch time. For indefinite time set 0.
+
+          #### revokeRecordOwner
+
+          Call to build an unsigned transaction to revoke a record owner. This method can be called
+          only by record owners.
+          Requires an access token with "timestamp_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **recordId**: Record ID to update
+          - **ownerId**: Ethereum address of the owner to revoke
+
+          #### timestampRecordVersionHashes
+
+          Call to build an unsigned transaction to timestamp data and link it to a new version of
+          an existing record. It's possible to insert up to 3 hashes in a single transaction. This
+          method can be called only by record owners.
+          Requires an access token with "timestamp_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **recordId**: Record ID to update
+          - **hashAlgorithmIds**: Array of hash algorithms ids used (up to 3)
+          - **hashValues**: Array of hashes (up to 3)
+          - **timestampData** (optional): Timestamp data. This field must be a JSON stringified and converted into hex string
+          - **versionInfo**: Version info. This field must be a JSON stringified and converted into hex string
+
+          #### appendRecordVersionHashes
+
+          Call to build an unsigned transaction to timestamp data and link it to an existing
+          version of a record. It's possible to insert up to 3 hashes in a single transaction. This
+          method can be called only by record owners.
+          Requires an access token with "timestamp_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **recordId**: Record ID to update
+          - **versionId**: Version ID to update
+          - **hashAlgorithmIds**: Array of hash algorithms ids used (up to 3)
+          - **hashValues**: Array of hashes (up to 3)
+          - **timestampData** (optional): Timestamp data. This field must be a JSON stringified and converted into hex string
+          - **versionInfo**: Version info. This field must be a JSON stringified and converted into hex string
+
+          #### detachRecordVersionHash
+
+          Call to build an unsigned transaction to detach a hash from the timestamps ids of a
+          version of an existing record. This method can be called only by record owners.
+          Requires an access token with "timestamp_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **recordId**: Record ID to update
+          - **versionId**: Version ID to update
+          - **hashValue**: Hash value to detach
+
+          #### insertRecordVersionInfo
+
+          Call to build an unsigned transaction to to insert new info to a version of an existing
+          record. This method can be called only by record owners.
+          Requires an access token with "timestamp_write" scope.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **recordId**: Record ID to update
+          - **versionId**: Version ID to update
+          - **versionInfo**: Version info. This field must be a JSON stringified and converted into hex string
+
+          #### sendSignedTransaction
+
+          Call to send a signed transaction to the blockchain.
+          Requires an access token with "timestamp_write" scope.
+        content:
+          application/json:
+            schema:
+              required:
+                - jsonrpc
+                - id
+                - method
+                - params
+              type: object
+              properties:
+                jsonrpc:
+                  description: Must be exactly "2.0"
+                  type: string
+                method:
+                  description: Method that needs to be invoked
+                  type: string
+                params:
+                  description: Array of parameters
+                  type: array
+                  items:
+                    type: object
+                id:
+                  description: Identifier established by the client
+                  type: integer
+                  example: 1
+            examples:
+              Build tx to insertHashAlgorithm:
+                value:
+                  jsonrpc: "2.0"
+                  method: insertHashAlgorithm
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      outputLength: 256
+                      ianaName: sha-256
+                      oid: "2.16.840.1.101.3.4.2.1"
+                      status: 1
+                      multiHash: sha2-256
+                  id: 1
+              Build tx to updateHashAlgorithm:
+                value:
+                  jsonrpc: "2.0"
+                  method: updateHashAlgorithm
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      hashAlgorithmId: 3
+                      outputLength: 256
+                      ianaName: sha-256
+                      oid: "2.16.840.1.101.3.4.2.1"
+                      status: 2
+                      multiHash: sha2-256
+                  id: 1
+              Build tx to timestampHashes:
+                value:
+                  jsonrpc: "2.0"
+                  method: timestampHashes
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      hashAlgorithmIds:
+                        - 0
+                      hashValues:
+                        - "0x1234567890123456789012345678901234567890123456789012345678901234"
+                      timestampData:
+                        - "0x7b2274657374223a3834327d"
+                  id: 1
+              Build tx to timestampRecordHashes:
+                value:
+                  jsonrpc: "2.0"
+                  method: timestampRecordHashes
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      hashAlgorithmIds:
+                        - 0
+                      hashValues:
+                        - "0x1234567890123456789012345678901234567890123456789012345678901234"
+                      timestampData:
+                        - "0x7b2274657374223a3834327d"
+                      versionInfo: "0x7b2274657374223a34327d"
+                  id: 1
+              Build tx to timestampVersionHashes:
+                value:
+                  jsonrpc: "2.0"
+                  method: timestampVersionHashes
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      versionHash: "0x1234567890123456789012345678901234567890123456789012345678901234"
+                      hashAlgorithmIds:
+                        - 0
+                      hashValues:
+                        - "0x1234567890123456789012345678901234567890123456789012345678901234"
+                      timestampData:
+                        - "0x7b2274657374223a3834327d"
+                      versionInfo: "0x7b2274657374223a34327d"
+                  id: 1
+              Build tx to insertRecordOwner:
+                value:
+                  jsonrpc: "2.0"
+                  method: insertRecordOwner
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      recordId: "0xec45567890123456789012345678901fa456789012345678901234567890abfe"
+                      ownerId: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      notBefore: 1606387195
+                      notAfter: 0
+                  id: 1
+              Build tx to revokeRecordOwner:
+                value:
+                  jsonrpc: "2.0"
+                  method: revokeRecordOwner
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      recordId: "0xec45567890123456789012345678901fa456789012345678901234567890abfe"
+                      ownerId: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                  id: 1
+              Build tx to timestampRecordVersionHashes:
+                value:
+                  jsonrpc: "2.0"
+                  method: timestampRecordVersionHashes
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      recordId: "0xec45567890123456789012345678901fa456789012345678901234567890abfe"
+                      hashAlgorithmIds:
+                        - 0
+                      hashValues:
+                        - "0x1234567890123456789012345678901234567890123456789012345678901234"
+                      timestampData:
+                        - "0x7b2274657374223a3834327d"
+                      versionInfo: "0x7b2274657374223a34327d"
+                  id: 1
+              Build tx to appendRecordVersionHashes:
+                value:
+                  jsonrpc: "2.0"
+                  method: appendRecordVersionHashes
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      recordId: "0xec45567890123456789012345678901fa456789012345678901234567890abfe"
+                      versionId: 0
+                      hashAlgorithmIds:
+                        - 0
+                      hashValues:
+                        - "0x1234567890123456789012345678901234567890123456789012345678901234"
+                      timestampData:
+                        - "0x7b2274657374223a3834327d"
+                      versionInfo: "0x7b2274657374223a34327d"
+                  id: 1
+              Build tx to detachRecordVersionHash:
+                value:
+                  jsonrpc: "2.0"
+                  method: detachRecordVersionHash
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      recordId: "0xec45567890123456789012345678901fa456789012345678901234567890abfe"
+                      versionId: 0
+                      hashValue: "0x1234567890123456789012345678901234567890123456789012345678901234"
+                  id: 1
+              Build tx to insertRecordVersionInfo:
+                value:
+                  jsonrpc: "2.0"
+                  method: insertRecordVersionInfo
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      recordId: "0xec45567890123456789012345678901fa456789012345678901234567890abfe"
+                      versionId: 0
+                      versionInfo: "0x7b2274657374223a34327d"
+                  id: 1
+              Send Transaction:
+                description: Call to send a signed transaction to the blockchain.
+                value:
+                  jsonrpc: "2.0"
+                  method: sendSignedTransaction
+                  params:
+                    - protocol: eth
+                      unsignedTransaction:
+                        from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                        to: "0xFde86148db58f57787C06BeAf63a9c3f789357b3"
+                        data: "0x0000..."
+                        nonce: "0x00"
+                        chainId: "0x1b3b"
+                        gasLimit: "0x10000"
+                        gasPrice: "0x00"
+                        value: "0x00"
+                      r: "0x..."
+                      s: "0x..."
+                      v: "0x..."
+                      signedRawTransaction: "--- signed raw transaction ---"
+                  id: 1
+      responses:
+        "200":
+          description: Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonRpcResponse"
+              examples:
+                Build tx:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    result:
+                      from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      to: "0xFde86148db58f57787C06BeAf63a9c3f789357b3"
+                      data: "0x0000..."
+                      nonce: "0x00"
+                      chainId: "0x1b3b"
+                      gasLimit: "0x10000"
+                      gasPrice: "0x00"
+                      value: "0x00"
+                Send Transaction:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    result: "0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331"
+        "400":
+          description: Bad request
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Request:
+                  $ref: "#/components/examples/BadRequest"
+components:
+  schemas:
+    ProblemDetails:
+      title: Problem Details
+      description: A [Problem Details](https://datatracker.ietf.org/doc/html/rfc7807) object.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the problem type. When dereferenced,
+            it SHOULD provide human-readable documentation for the problem type.
+          default: "about:blank"
+        title:
+          type: string
+          description: |
+            A short summary of the problem type.
+          example: Internal Server Error
+        status:
+          type: integer
+          format: int32
+          description: |
+            The HTTP status code generated by the origin server for this occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          example: 500
+        detail:
+          type: string
+          description: |
+            A human readable explanation specific to this occurrence of the problem.
+          example: Connection timeout
+        instance:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the specific occurrence of the problem.
+            It may or may not yield further information if dereferenced.
+    JsonRpcResponse:
+      title: JSON-RPC Response
+      type: object
+      properties:
+        jsonrpc:
+          description: Must be exactly "2.0"
+          type: string
+        id:
+          description: Same identifier established by the client in the call
+          type: integer
+        result:
+          description: Result of the call
+          oneOf:
+            - type: object
+            - type: string
+    HashAlgorithm:
+      title: Hash algorithm
+      type: object
+      properties:
+        outputLengthBits:
+          type: number
+          description: Hash algorithm output length in bits. 0 if the output length if variable.
+        ianaName:
+          type: string
+          description: Hash algorithm IANA name.
+        oid:
+          type: string
+          description: Object identifier.
+        status:
+          type: string
+          description: Status of the algorithm (active, revoked).
+        multiHash:
+          type: string
+          description: Multihash name
+    Record:
+      title: Record
+      type: object
+      properties:
+        ownerIds:
+          description: A list of record owners/controllers
+          type: array
+          items:
+            type: string
+        revokedOwnerIds:
+          description: A list of revoked owners/controllers
+          type: array
+          items:
+            type: string
+        firstVersionTimestamps:
+          description: A list of the first version timestamps
+          type: array
+          items:
+            type: string
+        lastVersionTimestamps:
+          description: A list of the last version timestamps
+          type: array
+          items:
+            type: string
+        totalVersions:
+          description: A total number of versions
+          type: number
+    Version:
+      title: Version
+      type: object
+      properties:
+        hashes:
+          type: array
+          items:
+            type: string
+          description: A list of timestamped version hashes
+        info:
+          type: array
+          items:
+            type: object
+          description: A list of info objects (should be JSON-LD)
+    Timestamp:
+      title: Timestamp information
+      type: object
+      properties:
+        hash:
+          description: Timestamped hash (multi-hash, base64 multi-encoded)
+          type: string
+        timestampedBy:
+          description: Address of the transaction signer that timestamped the information.
+          type: string
+        blockNumber:
+          description: Number of the block in which the hash has been timestamped.
+          type: integer
+        timestamp:
+          description: Timestamp in ISO 8601 format
+          type: string
+        transactionHash:
+          description: Hash of the transaction/transaction id.
+          type: string
+        data:
+          description: Additional timestamp data (bytes, serialized JSON-LD)
+          type: string
+    Links:
+      title: Links
+      description: Links model used for pagination.
+      type: object
+      properties:
+        last:
+          type: string
+          description: URI of the last page
+        prev:
+          type: string
+          description: URI of the previous page
+        next:
+          type: string
+          description: URI of the next page
+        first:
+          type: string
+          description: URI of the first page
+  examples:
+    BadRequest:
+      value:
+        title: Bad Request
+        status: 400
+        detail: Bad request
+    NotFound:
+      value:
+        title: Not found
+        status: 404
+        detail: Not found
+    InternalError:
+      value:
+        title: Internal error
+        status: 500
+        detail: Internal error
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+  - url: http://localhost
+    description: Local Computer Environment
+  - url: https://api-test.ebsi.eu
+    description: EBSI Test Environment
+  - url: https://api-pilot.ebsi.eu
+    description: EBSI Pilot Environment
+  - url: https://api-conformance.ebsi.eu
+    description: EBSI Conformance Environment

@@ -1,0 +1,307 @@
+openapi: 3.1.0
+info:
+  title: Ledger API v4
+  version: 4.0.0
+  description: |
+    Ledger API service gives use case applications access to all the
+    available blockchain protocol interfaces and capabilities provided by the
+    ledger nodes software running on MS hosted nodes.
+
+    The Ledger API is a Core Service of the EBSI platform providing access to
+    the EBSI Ledger Protocol(s) and Smart Contracts services running at the
+    lower layer Chain & Storage.
+
+    EBSI Ledger API provides capabilities to interact with Hyperledger Besu.
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/page/eupl-text-11-12
+  contact:
+    name: EBSI Support - Service Desk
+    url: https://ec.europa.eu/digital-building-blocks/tracker/plugins/servlet/desk/portal/11
+paths:
+  /ledger/v4/blockchains/besu:
+    post:
+      operationId: post-blockchains-besu
+      tags:
+        - Hyperledger Besu
+      summary: Besu JSON-RPC API
+      description: |
+        Hyperledger Besu Ethereum Enterprise Client JSON-RPC API.
+      requestBody:
+        required: true
+        description: |
+          The body follows the
+          [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification).
+          It requires the following fields:
+
+          - **jsonrpc**: Must be exactly "2.0"
+          - **method**: Hyperledger Besu JSON-RPC native method that is invoked.
+          - **params**: Array of parameters.
+          - **id**: Identifier established by the client.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JsonRpcRequest"
+            examples:
+              Get Block:
+                value:
+                  jsonrpc: "2.0"
+                  method: eth_getBlockByNumber
+                  params:
+                    - "123456"
+                    - true
+                  id: 1
+              Get Transaction:
+                value:
+                  jsonrpc: "2.0"
+                  method: eth_getTransactionByHash
+                  params:
+                    - "0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b"
+                  id: 1
+              Batch Request:
+                value:
+                  - jsonrpc: "2.0"
+                    method: eth_getBlockByNumber
+                    params:
+                      - "123456"
+                      - true
+                    id: 1
+                  - jsonrpc: "2.0"
+                    method: eth_getTransactionByHash
+                    params:
+                      - "0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b"
+                    id: 2
+      responses:
+        "200":
+          description: JSON-RPC Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonRpcResponse"
+              examples:
+                Get Block:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    result:
+                      number: "0x1e240"
+                      hash: "0x266bd6a41047c0929ebedd56cae148caab0d20a23aa1895bb95524a300ef9187"
+                      parentHash: "0x705094eb8ca67929254bedaff973d254311d72a38dc2b95a8711682f034fd3b4"
+                      nonce: "0x0000000000000000"
+                      sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+                      logsBloom: "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+                      transactionsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+                      stateRoot: "0x4b7559720ae8af08782bcadc07c94243ceaf5fe1d7ee0914d76ad37969791dc4"
+                      receiptsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+                      miner: "0x7df7b640d9c4c24f563a7d5702499521255fc165"
+                      difficulty: "0x1"
+                      totalDifficulty: "0x1e241"
+                      extraData: "0xf90148a00000000000000000000000000000000000000000000000000000000000000000f854947df7b640d9c4c24f563a7d5702499521255fc165949d2375d1b45b54603a365e23e0197c0a7a8150c894da316adfafdfe6c627e9429176954f25e4a2fb8e94f618d305b3cc3e7181937da874ad07d6f2d67c10808400000000f8c9b841e5e6da6c913c81673972889aeaf5b1dc1b4ae3070ed9dcc3a9e8d7de36a7f778694ff632bdc8fd8964e6b95e592eb17132f8eeb42ebd8044e3646bc7d7154fde01b841e7d6e72d7423f1eb9ba5448fd7c4c2f2770a668bdf187aa3a330e708bf369cf1645ea3d2f03924125509c3aaaef01c1efd8c26122abcd7c96ba080f391d1db6801b841c30e22e5549ed4b06ab8a9f19cd1b41d250e06e5229b945475f2616b9c6eb3a9325a9ea57926da4081a33279a78fab219f803ed638300378e819bb6ffc60479100"
+                      size: "0x350"
+                      gasLimit: "0x1fffffffffffff"
+                      gasUsed: "0x0"
+                      timestamp: "0x5e7b16f4"
+                      uncles: []
+                      transactions: []
+                Get Transaction:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    result:
+                      blockHash: "0x1d59ff54b1eb26b013ce3cb5fc9dab3705b415a67127a003c3e61eb445bb8df2"
+                      blockNumber: "0x5daf3b"
+                      from: "0xa7d9ddbe1f17865597fbd27ec712455208b6b76d"
+                      gas: "0xc350"
+                      gasPrice: "0x0"
+                      hash: "0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b"
+                      input: "0x68656c6c6f21"
+                      nonce: "0x15"
+                      to: "0xf02c1c8e6114b1dbe8937a39260b5b0a374432bb"
+                      transactionIndex: "0x41"
+                      value: "0xf3dbb76162000"
+                      v: "0x25"
+                      r: "0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea"
+                      s: "0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c"
+                Batch Request:
+                  value:
+                    - jsonrpc: "2.0"
+                      id: 1
+                      result:
+                        number: "0x1e240"
+                        hash: "0x266bd6a41047c0929ebedd56cae148caab0d20a23aa1895bb95524a300ef9187"
+                        parentHash: "0x705094eb8ca67929254bedaff973d254311d72a38dc2b95a8711682f034fd3b4"
+                        nonce: "0x0000000000000000"
+                        sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+                        logsBloom: "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+                        transactionsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+                        stateRoot: "0x4b7559720ae8af08782bcadc07c94243ceaf5fe1d7ee0914d76ad37969791dc4"
+                        receiptsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+                        miner: "0x7df7b640d9c4c24f563a7d5702499521255fc165"
+                        difficulty: "0x1"
+                        totalDifficulty: "0x1e241"
+                        extraData: "0xf90148a00000000000000000000000000000000000000000000000000000000000000000f854947df7b640d9c4c24f563a7d5702499521255fc165949d2375d1b45b54603a365e23e0197c0a7a8150c894da316adfafdfe6c627e9429176954f25e4a2fb8e94f618d305b3cc3e7181937da874ad07d6f2d67c10808400000000f8c9b841e5e6da6c913c81673972889aeaf5b1dc1b4ae3070ed9dcc3a9e8d7de36a7f778694ff632bdc8fd8964e6b95e592eb17132f8eeb42ebd8044e3646bc7d7154fde01b841e7d6e72d7423f1eb9ba5448fd7c4c2f2770a668bdf187aa3a330e708bf369cf1645ea3d2f03924125509c3aaaef01c1efd8c26122abcd7c96ba080f391d1db6801b841c30e22e5549ed4b06ab8a9f19cd1b41d250e06e5229b945475f2616b9c6eb3a9325a9ea57926da4081a33279a78fab219f803ed638300378e819bb6ffc60479100"
+                        size: "0x350"
+                        gasLimit: "0x1fffffffffffff"
+                        gasUsed: "0x0"
+                        timestamp: "0x5e7b16f4"
+                        uncles: []
+                        transactions: []
+                    - jsonrpc: "2.0"
+                      id: 2
+                      result:
+                        blockHash: "0x1d59ff54b1eb26b013ce3cb5fc9dab3705b415a67127a003c3e61eb445bb8df2"
+                        blockNumber: "0x5daf3b"
+                        from: "0xa7d9ddbe1f17865597fbd27ec712455208b6b76d"
+                        gas: "0xc350"
+                        gasPrice: "0x0"
+                        hash: "0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b"
+                        input: "0x68656c6c6f21"
+                        nonce: "0x15"
+                        to: "0xf02c1c8e6114b1dbe8937a39260b5b0a374432bb"
+                        transactionIndex: "0x41"
+                        value: "0xf3dbb76162000"
+                        v: "0x25"
+                        r: "0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea"
+                        s: "0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c"
+                MethodNotFound:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    error:
+                      code: -32601
+                      message: The method eth_unknown requires an access token.
+        "400":
+          description: JSON-RPC Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/JsonRpcResponse"
+              examples:
+                Parse error:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    error:
+                      code: -32700
+                      message: "Parse error"
+components:
+  schemas:
+    JsonRpcPayload:
+      type: object
+      required:
+        - jsonrpc
+        - id
+        - method
+        - params
+      properties:
+        jsonrpc:
+          description: Must be exactly "2.0"
+          type: string
+          enum: ["2.0"]
+        method:
+          description: Besu JSON-RPC native method to be invoked
+          type: string
+        params:
+          description: Array of parameters
+          type: array
+          items:
+            oneOf:
+              - type: boolean
+              - type: object
+              - type: string
+        id:
+          description: Identifier established by the client
+          oneOf:
+            - type: number
+            - type: string
+          examples: [1, "1"]
+    JsonRpcBatchPayload:
+      type: array
+      items:
+        $ref: "#/components/schemas/JsonRpcPayload"
+    JsonRpcRequest:
+      title: JSON-RPC Request
+      oneOf:
+        - $ref: "#/components/schemas/JsonRpcPayload"
+        - $ref: "#/components/schemas/JsonRpcBatchPayload"
+    JsonRpcResult:
+      title: JSON-RPC Result
+      type: object
+      required:
+        - jsonrpc
+        - id
+        - result
+      properties:
+        jsonrpc:
+          description: Must be exactly "2.0"
+          type: string
+          enum: ["2.0"]
+        id:
+          description: Same identifier established by the client in the call
+          oneOf:
+            - type: number
+            - type: string
+          examples: [1, "1"]
+        result:
+          description: Result of the call
+          oneOf:
+            - type: array
+              items:
+                oneOf:
+                  - type: string
+                  - type: object
+            - type: boolean
+            - type: object
+            - type: string
+    JsonRpcError:
+      title: JSON-RPC Error
+      type: object
+      required:
+        - jsonrpc
+        - id
+        - error
+      properties:
+        jsonrpc:
+          description: Must be exactly "2.0"
+          type: string
+          enum: ["2.0"]
+        id:
+          description: Same identifier established by the client in the call
+          oneOf:
+            - type: number
+            - type: string
+          examples: [1, "1"]
+        error:
+          description: Error details
+          type: object
+          properties:
+            code:
+              description: Error code
+              type: integer
+            message:
+              description: Error message
+              type: string
+    JsonRpcSingleResponse:
+      title: JSON-RPC Single Response
+      oneOf:
+        - $ref: "#/components/schemas/JsonRpcResult"
+        - $ref: "#/components/schemas/JsonRpcError"
+    JsonRpcBatchResponse:
+      title: JSON-RPC Batch Response
+      type: array
+      items:
+        $ref: "#/components/schemas/JsonRpcSingleResponse"
+    JsonRpcResponse:
+      title: JSON-RPC Response
+      oneOf:
+        - $ref: "#/components/schemas/JsonRpcSingleResponse"
+        - $ref: "#/components/schemas/JsonRpcBatchResponse"
+servers:
+  - url: http://localhost
+    description: Local Computer Environment
+  - url: https://api-test.ebsi.eu
+    description: EBSI Test Environment
+  - url: https://api-pilot.ebsi.eu
+    description: EBSI Pilot Environment
+  - url: https://api-conformance.ebsi.eu
+    description: EBSI Conformance Environment

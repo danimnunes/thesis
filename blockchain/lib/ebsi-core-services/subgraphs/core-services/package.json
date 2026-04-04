@@ -1,0 +1,41 @@
+{
+  "private": true,
+  "name": "@ebsiint-subgraph/core-services",
+  "version": "0.0.0-rc.0",
+  "type": "module",
+  "license": "EUPL-1.2",
+  "scripts": {
+    "deploy": "node ./scripts/prepare.mjs && node ./scripts/deploy.mjs",
+    "lint": "eslint .",
+    "setup": "cross-env NODE_ENV=test DIDR_SC_V5_ADDRESS=0x26E603f6FdCfC007c7bdC5be5f2c91D2a64a32E7 DIDR_SC_V5_START_BLOCK=8283108 PROXY_FACTORY_SC_V1_ADDRESS=0x48a11579fb469e62f698622C5e5bcBB6Fd3e1cCF PROXY_FACTORY_SC_V1_START_BLOCK=16382285 PROXY_TEMPLATE_REGISTRY_SC_V1_ADDRESS=0x28575Fe9C1B1E5878Fc63AfE1Aa8c4eeDE3A1B8a PROXY_TEMPLATE_REGISTRY_SC_V1_START_BLOCK=16382283 TIMESTAMP_SC_V4_ADDRESS=0xCb9e9F0229f1492A22801B176196eCb158eb24B0 TIMESTAMP_SC_V4_START_BLOCK=8291049 TNT_SC_V1_ADDRESS=0x5D4ee65803447c3E5A79BCd045FE4b6Bd068dFF7 TNT_SC_V1_START_BLOCK=10433488 TIR_SC_V5_ADDRESS=0xC2113689d64b794Dc311A38bFA1f7A1D5E4B6Cb9 TIR_SC_V5_START_BLOCK=8290928 TPR_SC_V3_ADDRESS=0x3d5edA0b5183e245bA9713B58834525EDfE46E90 TPR_SC_V3_START_BLOCK=8282062 TSR_SC_V3_ADDRESS=0x8037cBc59875Fab2C50E6dD7f76295538333A0e4 TSR_SC_V3_START_BLOCK=16216437 node ./scripts/prepare.mjs && pnpm exec graph codegen",
+    "test": "pnpm exec graph test -d",
+    "test:unit": "pnpm exec graph test"
+  },
+  "dependencies": {
+    "@ebsiint-sc/did-registry-v5": "workspace:*",
+    "@ebsiint-sc/timestamp-v4": "workspace:*",
+    "@ebsiint-sc/track-and-trace": "workspace:*",
+    "@ebsiint-sc/trusted-contracts-registry-v1": "workspace:*",
+    "@ebsiint-sc/trusted-issuers-registry-v5": "workspace:*",
+    "@ebsiint-sc/trusted-policies-registry-v3": "workspace:*",
+    "@ebsiint-sc/trusted-schemas-registry-v3": "workspace:*",
+    "@graphprotocol/graph-ts": "0.38.2"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "0.98.1",
+    "assemblyscript": "0.19.23",
+    "assemblyscript-json": "1.1.0",
+    "binaryen": "102.0.0-nightly.20211028",
+    "execa": "9.6.1",
+    "matchstick-as": "0.6.0"
+  },
+  "nx": {
+    "targets": {
+      "deploy": {
+        "dependsOn": [
+          "^build"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,1154 @@
+openapi: 3.1.0
+info:
+  title: ESTAT API v1
+  version: 1.0.0
+  description: |
+    ESTAT API is a fork of Track and Trace API.
+
+    Track and Trace (TnT) creates Proof of Origin with the following capabilities.
+
+    - Proof of Origin
+      - Aggregation of Events (partial proofs) of: by who, on behalf of, what, and when
+    - Built in access management for did:key and did:ebsi
+  contact:
+    name: EBSI Support - Service Desk
+    url: https://ec.europa.eu/digital-building-blocks/tracker/plugins/servlet/desk/portal/11
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/page/eupl-text-11-12
+paths:
+  /estat/v1/documents:
+    get:
+      operationId: get-documents
+      summary: List documents
+      description: Returns a list of documents.
+      tags:
+        - Document
+      parameters:
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: Absolute path to the collection (consult)
+                  items:
+                    type: array
+                    description: List of documents
+                    items:
+                      type: object
+                      properties:
+                        documentId:
+                          type: string
+                          description: The document ID
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items across all pages.
+                  pageSize:
+                    type: integer
+                    description: |
+                      Maximum number of items per page. For the last page, its value should be
+                      independent of the number of actually returned items.
+                  links:
+                    $ref: "#/components/schemas/Links"
+              example:
+                self: https://api-pilot.ebsi.eu/estat/v1/documents?page[after]=1&page[size]=10
+                items:
+                  - documentId: "0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8"
+                    href: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8
+                  - documentId: "0x99ab5f3cfc581c53a9210fc4588416fbc84b3ff09950ddc84e0efd1e2b2e147a"
+                    href: https://api-pilot.ebsi.eu/estat/v1/documents/0x99ab5f3cfc581c53a9210fc4588416fbc84b3ff09950ddc84e0efd1e2b2e147a
+                  - documentId: "0x4ed9c02a2c28de4ebfb274f8036d961062b05d8ea7a06682725d36224718e03e"
+                    href: https://api-pilot.ebsi.eu/estat/v1/documents/0x4ed9c02a2c28de4ebfb274f8036d961062b05d8ea7a06682725d36224718e03e
+                  - documentId: "0xdd97695335b338c3de251247b533589cd2847000c4c0100a5ece17f28feb8640"
+                    href: https://api-pilot.ebsi.eu/estat/v1/documents/0xdd97695335b338c3de251247b533589cd2847000c4c0100a5ece17f28feb8640
+                  - documentId: "0xb64f68452c5b4a30ff952e4f873df8f5d340684d98b90417a6c26e9f48ff4e11"
+                    href: https://api-pilot.ebsi.eu/estat/v1/documents/0xb64f68452c5b4a30ff952e4f873df8f5d340684d98b90417a6c26e9f48ff4e11
+                  - documentId: "0x9a7897302b2967c8818ea2b61fa64138ea6f370640739f4a04957dd15c0c43e2"
+                    href: https://api-pilot.ebsi.eu/estat/v1/documents/0x9a7897302b2967c8818ea2b61fa64138ea6f370640739f4a04957dd15c0c43e2
+                  - documentId: "0x8edbce68309d79731a9e45bba4448b3c705e4074016e0f2cf994e8ad37e99b85"
+                    href: https://api-pilot.ebsi.eu/estat/v1/documents/0x8edbce68309d79731a9e45bba4448b3c705e4074016e0f2cf994e8ad37e99b85
+                  - documentId: "0x6e64123aaaa5d5e73fc878cc374e72bc9b7791f0048c968953d1943ea0138305"
+                    href: https://api-pilot.ebsi.eu/estat/v1/documents/0x6e64123aaaa5d5e73fc878cc374e72bc9b7791f0048c968953d1943ea0138305
+                  - documentId: "0x32a2334e9b8793fe4862ba6bac909e148b9ff98c4ca3ed54e598aa5cff63e670"
+                    href: https://api-pilot.ebsi.eu/estat/v1/documents/0x32a2334e9b8793fe4862ba6bac909e148b9ff98c4ca3ed54e598aa5cff63e670
+                  - documentId: "0xb08f451727fd50a5cd8433a86ce04302462477e7e978028d71094fc564dbad5e"
+                    href: https://api-pilot.ebsi.eu/estat/v1/documents/0xb08f451727fd50a5cd8433a86ce04302462477e7e978028d71094fc564dbad5e
+                total: 98
+                pageSize: 10
+                links:
+                  first: https://api-pilot.ebsi.eu/estat/v1/documents?page[after]=1&page[size]=10
+                  prev: https://api-pilot.ebsi.eu/estat/v1/documents?page[after]=1&page[size]=10
+                  next: https://api-pilot.ebsi.eu/estat/v1/documents?page[after]=2&page[size]=10
+                  last: https://api-pilot.ebsi.eu/estat/v1/documents?page[after]=10&page[size]=10
+        "400":
+          description: Bad Request Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: '["page[size] must not be greater than 50"]'
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /estat/v1/documents/{documentId}:
+    get:
+      tags:
+        - Document
+      summary: Get a document
+      description: Gets the document corresponding to the ID.
+      operationId: get-document
+      parameters:
+        - in: path
+          name: documentId
+          description: |
+            The 32-bytes ID of the document, encoded in hexadecimal.
+          required: true
+          schema:
+            type: string
+          example: "0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8"
+        - in: query
+          name: version
+          description: |
+            Version of the endpoint to use. Defaults to the latest version.
+          required: false
+          schema:
+            type: string
+            enum:
+              - deprecated
+              - latest
+          example: "deprecated"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: "#/components/schemas/Document"
+                  - $ref: "#/components/schemas/Document__deprecated"
+              examples:
+                Document:
+                  value:
+                    metadata: metadata
+                    timestamp:
+                      datetime: "0x65b24e0d"
+                      source: block
+                      proof: "0x0000000000000000000000000000000000000000000000000000000000000006"
+                    creator: did:ebsi:ztqWJAmfyuUEf9Jvh97p167
+                Document (deprecated):
+                  value:
+                    metadata: metadata
+                    timestamp:
+                      datetime: "0x65b24e0d"
+                      source: block
+                      proof: "0x0000000000000000000000000000000000000000000000000000000000000006"
+                      events: []
+                    creator: did:ebsi:ztqWJAmfyuUEf9Jvh97p167
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {documentId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: '["documentId must be 32 bytes encoded in hexadecimal and start with 0x"]'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Document Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /estat/v1/documents/{documentId}/events:
+    get:
+      operationId: get-document-events
+      summary: List events
+      description: Returns a list of events.
+      tags:
+        - Document
+      parameters:
+        - in: path
+          name: documentId
+          description: |
+            The 32-bytes ID of the document, encoded in hexadecimal.
+          required: true
+          schema:
+            type: string
+          example: "0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8"
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: Absolute path to the collection (consult)
+                  items:
+                    type: array
+                    description: List of events
+                    items:
+                      type: object
+                      properties:
+                        eventId:
+                          type: string
+                          description: The event ID
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items across all pages.
+                  pageSize:
+                    type: integer
+                    description: |
+                      Maximum number of items per page. For the last page, its value should be
+                      independent of the number of actually returned items.
+                  links:
+                    $ref: "#/components/schemas/Links"
+              example:
+                self: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8/events?page[after]=1&page[size]=10
+                items:
+                  - eventId: "0x17387b16ebd0df6d0debcd4204fecb5cef827b98a51d3736a223d0cf6dbe48f6"
+                    href: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8/events/0x17387b16ebd0df6d0debcd4204fecb5cef827b98a51d3736a223d0cf6dbe48f6
+                  - eventId: "0x502b93df1016f58eb69e1246c97ffc2f4ffeae36432b60626c973dd029fc21e6"
+                    href: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8/events/0x502b93df1016f58eb69e1246c97ffc2f4ffeae36432b60626c973dd029fc21e6
+                  - eventId: "0x780ee9343e9406d785a2261963bef1d0979e992895bddc0f2893c1946661b32f"
+                    href: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8/events/0x780ee9343e9406d785a2261963bef1d0979e992895bddc0f2893c1946661b32f
+                total: 3
+                pageSize: 10
+                links:
+                  first: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8/events?page[after]=1&page[size]=10
+                  prev: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8/events?page[after]=1&page[size]=10
+                  next: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8/events?page[after]=2&page[size]=10
+                  last: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8/events?page[after]=10&page[size]=10
+        "400":
+          description: Bad Request Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {documentId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: '["documentId must be 32 bytes encoded in hexadecimal and start with 0x"]'
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: '["page[size] must not be greater than 50"]'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Document Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /estat/v1/documents/{documentId}/events/{eventId}:
+    get:
+      operationId: get-document-event
+      summary: Get an event
+      description: Gets the event corresponding to the document ID and event ID.
+      tags:
+        - Document
+      parameters:
+        - in: path
+          name: documentId
+          description: |
+            The 32-bytes ID of the document, encoded in hexadecimal.
+          required: true
+          schema:
+            type: string
+          example: "0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8"
+        - in: path
+          name: eventId
+          description: |
+            The 32-bytes ID of the event, encoded in hexadecimal.
+          required: true
+          schema:
+            type: string
+          example: "0x4791c04d2e4838042c67f3e739ab8639b6bd0f6896ec7e32e99c640d43b530c7"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+              example:
+                externalHash: "0x7caebd56efed5cf6758c401961de9e33dff856cece64cb6ff3aa3a587393b96d"
+                hash: "0x4791c04d2e4838042c67f3e739ab8639b6bd0f6896ec7e32e99c640d43b530c7"
+                timestamp:
+                  datetime: "0x65d372cb"
+                  source: block
+                  proof: "0x000000000000000000000000000000000000000000000000000000000047a88d"
+                sender: "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg"
+                origin: origin
+                metadata: eventMetadata
+        "400":
+          description: Bad Request Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {documentId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: '["documentId must be 32 bytes encoded in hexadecimal and start with 0x"]'
+                Invalid {eventId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: '["eventId must be 32 bytes encoded in hexadecimal and start with 0x"]'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Document Not Found:
+                  $ref: "#/components/examples/NotFound"
+                Event Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /estat/v1/documents/{documentId}/accesses:
+    get:
+      operationId: get-document-accesses
+      summary: List accesses
+      description: Returns a list of accesses related to the document.
+      tags:
+        - Document
+      parameters:
+        - in: path
+          name: documentId
+          description: |
+            The 32-bytes ID of the document, encoded in hexadecimal.
+          required: true
+          schema:
+            type: string
+          example: "0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8"
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: Absolute path to the collection (consult)
+                  items:
+                    type: array
+                    description: List of accesses
+                    items:
+                      type: object
+                      properties:
+                        subject:
+                          type: string
+                          description: A `did:ebsi` or `did:key` DID.
+                        documentId:
+                          type: string
+                          description: The document ID.
+                        grantedBy:
+                          type: string
+                          description: |
+                            The `did:ebsi` or `did:key` DID of the granter of the permission.
+                            "creator" shall have itself as "grantedBy".
+                        permission:
+                          type: string
+                          description: |
+                            Permission granted: "write", "delegate" or "creator".
+                  total:
+                    type: integer
+                    description: Total number of items across all pages.
+                  pageSize:
+                    type: integer
+                    description: |
+                      Maximum number of items per page. For the last page, its value should be
+                      independent of the number of actually returned items.
+                  links:
+                    $ref: "#/components/schemas/Links"
+              example:
+                self: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8/accesses?page[after]=1&page[size]=10
+                items:
+                  - subject: did:ebsi:zxaYaUtb8pvoAtYNWbKcveg
+                    documentId: "0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8"
+                    grantedBy: did:ebsi:zxaYaUtb8pvoAtYNWbKcveg
+                    permission: creator
+                total: 1
+                pageSize: 10
+                links:
+                  first: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8/accesses?page[after]=1&page[size]=10
+                  prev: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8/accesses?page[after]=1&page[size]=10
+                  next: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8/accesses?page[after]=1&page[size]=10
+                  last: https://api-pilot.ebsi.eu/estat/v1/documents/0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8/accesses?page[after]=1&page[size]=10
+        "400":
+          description: Bad Request Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {documentId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: '["documentId must be 32 bytes encoded in hexadecimal and start with 0x"]'
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: '["page[size] must not be greater than 50"]'
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Document Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /estat/v1/accesses:
+    head:
+      operationId: head-accesses
+      summary: Check access
+      description: Checks if the DID is included in the allowlist of TnT Document creators or not.
+      tags:
+        - Accesses
+      parameters:
+        - in: query
+          name: creator
+          description: DID to check
+          schema:
+            type: string
+          required: true
+          example: did:ebsi:zxaYaUtb8pvoAtYNWbKcveg
+      responses:
+        "204":
+          description: Success
+        "400":
+          description: Bad Request Error
+        "404":
+          description: DID not found in the allowlist
+        "500":
+          description: Internal Server Error
+    get:
+      operationId: get-accesses
+      summary: Get accesses
+      description: Get accesses filtered by subject.
+      tags:
+        - Accesses
+      parameters:
+        - in: query
+          name: subject
+          description: Subject DID
+          schema:
+            type: string
+          required: true
+          example: did:ebsi:zxaYaUtb8pvoAtYNWbKcveg
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: Absolute path to the collection (consult)
+                  items:
+                    type: array
+                    description: List of accesses
+                    items:
+                      type: object
+                      properties:
+                        subject:
+                          type: string
+                          description: Subject
+                        documentId:
+                          type: string
+                          description: Document ID
+                        grantedBy:
+                          description: DID that granted the access
+                          type: string
+                        permission:
+                          description: Type of permission
+                          type: string
+                          enum:
+                            - write
+                            - delegate
+                            - creator
+                  total:
+                    type: integer
+                    description: Total number of items across all pages.
+                  pageSize:
+                    type: integer
+                    description: |
+                      Maximum number of items per page. For the last page, its value should be
+                      independent of the number of actually returned items.
+                  links:
+                    $ref: "#/components/schemas/Links"
+              example:
+                self: https://api-pilot.ebsi.eu/estat/v1/accesses?page[after]=1&page[size]=10&subject=did:ebsi:ztqWJAmfyuUEf9Jvh97p167
+                items:
+                  - documentId: "0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8"
+                    subject: did:ebsi:ztqWJAmfyuUEf9Jvh97p167
+                    grantedBy: did:ebsi:zmRQoAM1YrVBVA3cP6CwYfc
+                    permission: write
+                  - documentId: "0xbfc90433cfe7cf69119899a96837032bee6c84ba7f6ac9aa008ef2de5eeacfb8"
+                    subject: did:ebsi:ztqWJAmfyuUEf9Jvh97p167
+                    grantedBy: did:ebsi:zmRQoAM1YrVBVA3cP6CwYfc
+                    permission: delegate
+                total: 2
+                pageSize: 10
+                links:
+                  first: https://api-pilot.ebsi.eu/estat/v1/accesses?page[after]=1&page[size]=10&subject=did:ebsi:ztqWJAmfyuUEf9Jvh97p167
+                  prev: https://api-pilot.ebsi.eu/estat/v1/accesses?page[after]=1&page[size]=10&subject=did:ebsi:ztqWJAmfyuUEf9Jvh97p167
+                  next: https://api-pilot.ebsi.eu/estat/v1/accesses?page[after]=2&page[size]=10&subject=did:ebsi:ztqWJAmfyuUEf9Jvh97p167
+                  last: https://api-pilot.ebsi.eu/estat/v1/accesses?page[after]=10&page[size]=10&subject=did:ebsi:ztqWJAmfyuUEf9Jvh97p167
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Document Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /estat/v1/abi:
+    get:
+      operationId: get-abi
+      summary: Get ABI
+      description: Returns the ABI of Track and Trace SC v1.
+      tags:
+        - ABI
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                description: The ABI of Track and Trace SC v1.
+  /estat/v1/jsonrpc:
+    post:
+      operationId: post-jsonrpc
+      tags:
+        - JSON-RPC
+      summary: JSON-RPC API
+      description: |
+        The JSON-RPC API provides methods assisting the construction of blockchain transactions and
+        interaction with the ledger, i.e. write operation on ledger.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        description: |
+          The body follows the [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification).
+
+          It requires the following fields:
+
+          - **jsonrpc**: must be exactly "2.0"
+          - **method**: method to be invoked
+          - **params**: method parameters
+          - **id**: identifier established by the client
+
+          ### API Methods
+
+          #### authoriseDid
+
+          Requires an access token with `tnt_authorise` scope.
+
+          Call to build an unsigned transaction to authorise a DID to create documents.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **senderDid**: DID of the signer. Must be a `did:ebsi` DID (UTF-8)
+          - **authorisedDid**: DID to authorise. Must be a `did:ebsi` DID (UTF-8) registered in the DID Registry.
+          - **whiteList**: Boolean to define if the DID is authorized or unauthorized
+
+          #### createDocument
+
+          Requires an access token with `tnt_create` scope.
+
+          Call to build an unsigned transaction to create a new Document.
+
+          By default, it records the timestamp of the blockchain, but it's possible to define a different timestamp with its respective proof.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **documentHash**: Document hash
+          - **documentMetadata**: Document metadata as hex string
+          - **didEbsiCreator**: DID of the document creator. Must be a `did:ebsi` DID (UTF-8)
+          - **timestamp** (optional): Timestamp as hex string. By default it uses takes the timestamp from the blockchain
+          - **timestampProof** (optional): Timestamp proof as hex string. It must be defined when "timestamp" is defined
+
+          #### removeDocument
+
+          Requires an access token with `tnt_write` scope.
+
+          Call to build an unsigned transaction to remove a document and all related resources.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **documentHash**: Document hash to remove
+
+          #### grantAccess
+
+          Requires an access token with `tnt_write` scope.
+
+          Call to build an unsigned transaction to grant a permission for a DID in a specific document.
+
+          "write" grant requires the transaction signer to be creator of the Document, or signer must have "delegate" permission in the Document. "delegate" grant requires the transaction signer to be creator of the Document.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **documentHash**: Document hash
+          - **grantedByAccount**: Entity that grants the permission. If the entity uses the `did:ebsi` method, `grantedByAccount` must be the UTF-8 DID encoded in hexadecimal. If the entity uses the `did:key` method, `grantedByAccount` must be the secp256k1 uncompressed public key (64 bytes or 65 bytes with 04 prefix) encoded in hexadecimal.
+          - **subjectAccount**: Entity that receives the permission. If the entity uses the `did:ebsi` method, `subjectAccount` must be the UTF-8 DID encoded in hexadecimal. If the entity uses the `did:key` method, `subjectAccount` must be the secp256k1 uncompressed public key (64 bytes or 65 bytes with 04 prefix) encoded in hexadecimal.
+          - **grantedByAccType**: DID method of `grantedByAccount`. Use `0` for `did:ebsi` or `1` for `did:key`.
+          - **subjectAccType**: DID method of `subjectAccount`. Use `0` for `did:ebsi` or `1` for `did:key`.
+          - **permission**: Type of the permission to grant. Use `0` for "delegate" or `1` for "write"
+
+          #### revokeAccess
+
+          Requires an access token with `tnt_write` scope.
+
+          Call to build an unsigned transaction to revoke a permission from a DID in a specific Document.
+
+          Keep in mind that whenever the document's creator private key is lost, then there is no possibility to revoke access for this creator's documents anymore.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **documentHash**: Document hash
+          - **revokedByAccount**: Entity that revokes the permission. If the entity uses the `did:ebsi` method, `revokedByAccount` must be the UTF-8 DID encoded in hexadecimal. If the entity uses the `did:key` method, `revokedByAccount` must be the secp256k1 uncompressed public key (64 bytes or 65 bytes with 04 prefix) encoded in hexadecimal.
+          - **subjectAccount**: Entity whose permission is revoked. If the entity uses the `did:ebsi` method, `subjectAccount` must be the UTF-8 DID encoded in hexadecimal. If the entity uses the `did:key` method, `subjectAccount` must be the secp256k1 uncompressed public key (64 bytes or 65 bytes with 04 prefix) encoded in hexadecimal.
+          - **permission**: Type of the permission to revoke. Use `0` for "delegate" or `1` for "write"
+
+          #### writeEvent
+
+          Requires an access token with `tnt_write` scope.
+
+          Call to build an unsigned transaction to write an event into a specific document.
+
+          By default, it records the timestamp of the blockchain, but it's possible to define a different timestamp with its respective proof.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **eventParams**: Event parameters. JSON with the following fields:
+            - **documentHash**: Document hash (hex string)
+            - **externalHash**: External hash (string)
+            - **sender**: Entity that sends the event. If the entity uses the `did:ebsi` method, `sender` must be the UTF-8 DID encoded in hexadecimal. If the entity uses the `did:key` method, `sender` must be the secp256k1 uncompressed public key (64 bytes or 65 bytes with 04 prefix) encoded in hexadecimal.
+            - **origin**: Origin (string)
+            - **metadata**: Metadata (string)
+          - **timestamp** (optional): Timestamp as hex string. By default it uses takes the timestamp from the blockchain
+          - **timestampProof** (optional): Timestamp proof as hex string. It must be defined when "timestamp" is defined
+
+          #### sendSignedTransaction
+
+          Requires an access token with `tnt_authorise`, `tnt_create` or `tnt_write` scope.
+
+          Sends a signed transaction to the blockchain and returns the hash of the transaction.
+
+          **Warning: the transaction is not immediately processed. Make sure to check that the transaction has been successfully included in a block before moving on.**
+
+          You can get the [receipt of the transaction](https://besu.hyperledger.org/public-networks/reference/api/objects#transaction-receipt-object) by calling the [`eth_getTransactionReceipt`](https://besu.hyperledger.org/public-networks/reference/api#eth_gettransactionreceipt) method of [Ledger API's Besu endpoint](/apis/pilot/ledger/v4/post-blockchains-besu).
+
+          Receipts for pending transactions are not available, therefore you will have to wait until the transaction has been processed — usually a few seconds. We recommend you to poll the `eth_getTransactionReceipt` method until the receipt is available.
+
+          Once the receipt is available, you can check the `status` field to know if the transaction succeeded (`0x1`) or failed (`0x0`). If the transaction failed, the `revertReason` field will give you insights about the reason for the failure. You can learn more about the format of the revert reason in [Besu's documentation](https://besu.hyperledger.org/private-networks/how-to/send-transactions/revert-reason#revert-reason-format).
+        content:
+          application/json:
+            schema:
+              required:
+                - jsonrpc
+                - id
+                - method
+                - params
+              type: object
+              properties:
+                jsonrpc:
+                  description: Must be exactly "2.0"
+                  type: string
+                method:
+                  description: Method that needs to be invoked
+                  type: string
+                params:
+                  description: Array of parameters
+                  type: array
+                  items:
+                    type: object
+                id:
+                  description: Identifier established by the client
+                  type: integer
+                  example: 1
+            examples:
+              Build tx to authoriseDid:
+                value:
+                  jsonrpc: "2.0"
+                  method: authoriseDid
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      senderDid: did:ebsi:zbM8cCuoBMFNLeQyLiVFyxw
+                      authorisedDid: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                      whiteList: "0x01"
+                  id: 474
+              Build tx to createDocument (using block timestamp):
+                value:
+                  jsonrpc: "2.0"
+                  method: createDocument
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      documentHash: "0xcd299cdabd6299907c31f7cdf112830bda9e2d9f5d33c9fc75dd62caa6b9bd67"
+                      documentMetadata: "0x74657374206d65746164617461"
+                      didEbsiCreator: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                  id: 474
+              Build tx to createDocument (using external timestamp):
+                value:
+                  jsonrpc: "2.0"
+                  method: createDocument
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      documentHash: "0xcd299cdabd6299907c31f7cdf112830bda9e2d9f5d33c9fc75dd62caa6b9bd67"
+                      documentMetadata: "0x74657374206d65746164617461"
+                      didEbsiCreator: did:ebsi:z23eve8qDNzYuNVqfSaErpuJ
+                      timestamp: "0x65b776cb"
+                      timestampProof: "0x4d9f29fa5c0676e0888a3be59223609962c93b61c5c022d46812348aaae1b528"
+                  id: 474
+              Build tx to removeDocument:
+                value:
+                  jsonrpc: "2.0"
+                  method: removeDocument
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      documentHash: "0xcd299cdabd6299907c31f7cdf112830bda9e2d9f5d33c9fc75dd62caa6b9bd67"
+                  id: 474
+              Build tx to grantAccess:
+                value:
+                  jsonrpc: "2.0"
+                  method: grantAccess
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      documentHash: "0xcd299cdabd6299907c31f7cdf112830bda9e2d9f5d33c9fc75dd62caa6b9bd67"
+                      grantedByAccount: "0x6469643a656273693a7a32336576653871444e7a59754e5671665361457270754a"
+                      subjectAccount: "0x6469643a656273693a7a625a4e464d5863454e664161523137376e394d596738"
+                      grantedByAccType: "0x00"
+                      subjectAccType: "0x00"
+                      permission: "0x01"
+                  id: 474
+              Build tx to revokeAccess:
+                value:
+                  jsonrpc: "2.0"
+                  method: revokeAccess
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      documentHash: "0xcd299cdabd6299907c31f7cdf112830bda9e2d9f5d33c9fc75dd62caa6b9bd67"
+                      revokedByAccount: "0x6469643a656273693a7a32336576653871444e7a59754e5671665361457270754a"
+                      subjectAccount: "0x6469643a656273693a7a625a4e464d5863454e664161523137376e394d596738"
+                      permission: "0x01"
+                  id: 474
+              Build tx to writeEvent (using block timestamp):
+                value:
+                  jsonrpc: "2.0"
+                  method: writeEvent
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      eventParams:
+                        - documentHash: "0xcd299cdabd6299907c31f7cdf112830bda9e2d9f5d33c9fc75dd62caa6b9bd67"
+                          externalHash: "external hash"
+                          sender: "0x6469643a656273693a7a663632756876615175555a747936734d787a39715656"
+                          origin: origin
+                          metadata: "test metadata"
+                  id: 474
+              Build tx to writeEvent (using external timestamp):
+                value:
+                  jsonrpc: "2.0"
+                  method: writeEvent
+                  params:
+                    - from: "0xc9765eC58E49e6E386549CEAA34FB0d8bB69C320"
+                      eventParams:
+                        - documentHash: "0xcd299cdabd6299907c31f7cdf112830bda9e2d9f5d33c9fc75dd62caa6b9bd67"
+                          externalHash: "external hash"
+                          sender: "0x6469643a656273693a7a663632756876615175555a747936734d787a39715656"
+                          origin: origin
+                          metadata: "test metadata"
+                      timestamp: "0x65b776cb"
+                      timestampProof: "0x4d9f29fa5c0676e0888a3be59223609962c93b61c5c022d46812348aaae1b528"
+                  id: 474
+              Send Transaction:
+                value:
+                  jsonrpc: "2.0"
+                  method: sendSignedTransaction
+                  id: 1
+                  params:
+                    - protocol: eth
+                      unsignedTransaction:
+                        from: "0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7"
+                        to: "0xFde86148db58f57787C06BeAf63a9c3f789357b3"
+                        data: "0x0000..."
+                        nonce: "0x00"
+                        chainId: "0x1b3b"
+                        gasLimit: "0x10000"
+                        gasPrice: "0x00"
+                        value: "0x00"
+                      r: "0x..."
+                      s: "0x..."
+                      v: "0x..."
+                      signedRawTransaction: "--- signed raw transaction ---"
+      responses:
+        "200":
+          description: Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonRpcResponse"
+              examples:
+                Build tx:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 482
+                    result:
+                      from: "0x8445fC96e27ceB0d1794be16a1Ac8BF5D765AACB"
+                      to: "0x823BBc0ceE3dE3B61AcfA0CEedb951AB9a013F05"
+                      data: "0x250f4d9700000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000120fb33cccb447605de75846617385f6d2aac28010f53a89ecb5ce151751c53c8d400000000000000000000000000000000000000000000000000000000000000206469643a656273693a7a5a766970744568464e31723275313868686937486f66000000000000000000000000000000000000000000000000000000000000000865794a68622e2e2e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000216469643a656273693a7a323536617342576d4842736a325a4e567847354d686b7000000000000000000000000000000000000000000000000000000000000000"
+                      value: "0x0"
+                      nonce: "0xb1d3"
+                      chainId: "0x181f"
+                      gasLimit: "0x1000000"
+                      gasPrice: "0x0"
+                Send a transaction:
+                  description: Sends a signed transaction to the blockchain.
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    result: "0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Request:
+                  $ref: "#/components/examples/BadRequest"
+components:
+  schemas:
+    ProblemDetails:
+      title: Problem Details
+      description: A [Problem Details](https://datatracker.ietf.org/doc/html/rfc7807) object.
+      type: object
+      x-examples:
+        Not Enough Credit:
+          type: https://example.com/probs/out-of-credit
+          title: You do not have enough credit.
+          detail: Your current balance is 30, but that costs 50.
+          instance: /account/12345/msgs/abc
+      properties:
+        type:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the problem type. When dereferenced, it SHOULD provide
+            human-readable documentation for the problem type.
+          default: about:blank
+        title:
+          type: string
+          description: |
+            A short summary of the problem type.
+          example: Internal Server Error
+        status:
+          type: integer
+          format: int32
+          description: |
+            The HTTP status code generated by the origin server for this occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          example: 500
+        detail:
+          type: string
+          description: |
+            A human readable explanation specific to this occurrence of the problem.
+          example: Connection timeout
+        instance:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the specific occurrence of the problem. It may or may
+            not yield further information if dereferenced.
+    Links:
+      title: Links
+      description: Links model used for pagination
+      type: object
+      properties:
+        last:
+          type: string
+          description: URI of the last page
+        prev:
+          type: string
+          description: URI of the previous page
+        next:
+          type: string
+          description: URI of the next page
+        first:
+          type: string
+          description: URI of the first page
+    Document:
+      title: Document
+      description: Track and Trace Document
+      type: object
+      properties:
+        metadata:
+          description: Document's metadata
+          type: string
+        timestamp:
+          description: Timestamp object
+          type: object
+          properties:
+            datetime:
+              type: string
+              description: |
+                The date and time, optionally from transaction input
+            source:
+              type: string
+              description: |
+                Defines how the datetime was resolved, enumerated options are "block" and "external"
+            proof:
+              type: string
+              description: |
+                Proof of the source. Either a block number or a hash of timestamp certificate
+        creator:
+          type: string
+          description: The `did:key` or `did:ebsi` that created the document
+    Document__deprecated:
+      title: Document (deprecated)
+      description: Track and Trace Document
+      type: object
+      properties:
+        metadata:
+          description: Document's metadata
+          type: string
+        timestamp:
+          description: Timestamp object
+          type: object
+          properties:
+            datetime:
+              type: string
+              description: |
+                The date and time, optionally from transaction input
+            source:
+              type: string
+              description: |
+                Defines how the datetime was resolved, enumerated options are "block" and "external"
+            proof:
+              type: string
+              description: |
+                Proof of the source. Either a block number or a hash of timestamp certificate
+        events:
+          type: array
+          description: List of event hashes. Only available when the "version" parameter is "deprecated".
+          items:
+            type: string
+            description: Event hash
+        creator:
+          type: string
+          description: The `did:key` or `did:ebsi` that created the document
+    Event:
+      title: Event
+      description: Track and Trace Event
+      type: object
+      properties:
+        metadata:
+          description: Event's metadata
+          type: string
+        timestamp:
+          description: Timestamp object
+          type: object
+          properties:
+            datetime:
+              type: string
+              description: |
+                The date and time, optionally from transaction input
+            source:
+              type: string
+              description: |
+                Defines how the datetime was resolved, enumerated options are "block" and "external"
+            proof:
+              type: string
+              description: |
+                Proof of the source. Either a block number or a hash of timestamp certificate
+        sender:
+          type: string
+          description: |
+            The `did:key` or `did:ebsi` that created the event
+        origin:
+          type: string
+          description: |
+            Most of the times empty field, while it may be a string containing company name, while
+            it can also point into an Event. All assumed relations are external to the SC.
+        hash:
+          type: string
+          description: Event hash
+        externalHash:
+          type: string
+          description: Externally generated hash
+    JsonRpcResponse:
+      title: JSON-RPC Response
+      type: object
+      properties:
+        jsonrpc:
+          description: Must be exactly "2.0"
+          type: string
+        id:
+          description: Same identifier established by the client in the call
+          type: integer
+        result:
+          description: Result of the call
+          oneOf:
+            - type: object
+            - type: string
+  examples:
+    BadRequest:
+      value:
+        title: Bad request
+        status: 400
+        detail: Bad request
+    NotFound:
+      value:
+        title: Not found
+        status: 404
+        detail: Not found
+    InternalError:
+      value:
+        title: Internal error
+        status: 500
+        detail: Internal error
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+  - url: http://localhost
+    description: Local Computer Environment
+  - url: https://api-test.ebsi.eu
+    description: EBSI Test Environment
+  - url: https://api-pilot.ebsi.eu
+    description: EBSI Pilot Environment
+  - url: https://api-conformance.ebsi.eu
+    description: EBSI Conformance Environment

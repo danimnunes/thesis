@@ -1,0 +1,1297 @@
+openapi: 3.1.0
+info:
+  title: Trusted Issuers Registry API v5
+  version: 5.0.0
+  description: |
+    The Trusted Issuers Registry (TIR) is a generic decentralised registry that maintains information about trusted issuers, including public data, accreditations and other relevant details. This information is stored in the smart contract as Attribute Envelopes (similar to Verifiable Credentials), which can be issued by Trusted Issuers or self-issued. Validation of generic Envelopes (like Verifiable Credentials) occurs outside the EBSI Platform. Issuers can define proxies used during credential verification to check if credentials are still valid or have been revoked. The verification flow is detailed in the [Credential Status Framework](https://hub.ebsi.eu/vc-framework/credential-status-framework).
+
+    To register a DID with the TIR, a Legal Entity (LE) must first generate a DID and DID document, and then request a `VerifiableAuthorisationToOnboard` Verifiable Credential (VC) from the Issuer. After presenting the `VerifiableAuthorisationToOnboard` VC, the LE receives an access token, which allows it to register its DID in the DID registry. To become a Truster Issuer, the LE must also request a `VerifiableAccreditationToAttest` VC and register it into the TIR. Upon presenting this VC, the LE receives an access token that permits it to insert its DID into the TIR.
+
+    The TIR service consists of a smart contract (TIR SC) and API (TIR API). The TIR SC is an Ethereum smart contract deployed on the EBSI ledger. All public smart contract methods are accessible via APIs. Two types of APIs are provided: JSON-RPC for write operations and REST for the read operations. The TIR API enables the management and verification of Trusted Issuers' information and accreditations. Note that the accreditation of Trusted Issuers is domain-specific and falls outside the EBSI scope.
+
+    For more information see:
+    + [CLI Tool page](https://hub.ebsi.eu/tools/cli): Test the capabilities using the EBSI CLI tool
+  contact:
+    name: EBSI Support - Service Desk
+    url: https://ec.europa.eu/digital-building-blocks/tracker/plugins/servlet/desk/portal/11
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/page/eupl-text-11-12
+paths:
+  /trusted-issuers-registry/v5/issuers:
+    get:
+      operationId: get-issuers
+      summary: List issuers
+      description: Returns a list of trusted issuers.
+      tags:
+        - Issuers
+      parameters:
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: URI to issuers
+                  items:
+                    type: array
+                    description: list of issuers with their decentralized identifier
+                    items:
+                      type: object
+                      properties:
+                        did:
+                          type: string
+                          description: Issuer's DID
+                        href:
+                          type: string
+                          description: Link to issuer
+                  total:
+                    type: integer
+                    description: Total number of items in a collection
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page
+                  links:
+                    $ref: "#/components/schemas/links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers?page[after]=182&page[size]=10
+                    items:
+                      - did: did:ebsi:zppVrNT9bBgMqxrJqVEnvyk
+                        href: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zppVrNT9bBgMqxrJqVEnvyk
+                      - did: did:ebsi:zr2rWDHHrUCdZAW7wsSb5nQ
+                        href: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zr2rWDHHrUCdZAW7wsSb5nQ
+                      - did: did:ebsi:zzQar5zYxUCo1bPypeN3tiF
+                        href: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zzQar5zYxUCo1bPypeN3tiF
+                      - did: did:ebsi:z23usJB14wsPNwTds2esnoJt
+                        href: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:z23usJB14wsPNwTds2esnoJt
+                      - did: did:ebsi:zZviptEhFN1r2u18hhi7Hof
+                        href: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZviptEhFN1r2u18hhi7Hof
+                    total: 1816
+                    pageSize: 10
+                    links:
+                      first: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers?page[after]=1&page[size]=10
+                      prev: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers?page[after]=181&page[size]=10
+                      next: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers?page[after]=182&page[size]=10
+                      last: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers?page[after]=182&page[size]=10
+        "400":
+          description: Bad Request Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: PageSize should not be greater than 50
+        "500":
+          description: Internal Server Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-issuers-registry/v5/issuers/{did}:
+    get:
+      operationId: get-issuer
+      summary: Get an issuer
+      description: Returns a trusted issuer identified by its decentralised identifier (DID).
+      tags:
+        - Issuers
+      parameters:
+        - name: did
+          in: path
+          schema:
+            type: string
+          examples:
+            did:
+              description: Valid Pilot DID
+              value: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+          required: true
+        - in: query
+          name: version
+          description: |
+            Version of the endpoint to use. Defaults to the latest version.
+          required: false
+          schema:
+            type: string
+            enum:
+              - deprecated
+              - latest
+          example: "deprecated"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: "#/components/schemas/issuer"
+                  - $ref: "#/components/schemas/issuer__deprecated"
+              examples:
+                Issuer:
+                  value:
+                    did: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                    attributes: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes
+                    hasAttributes: true
+                Issuer (deprecated):
+                  value:
+                    did: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                    attributes:
+                      - hash: 447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14
+                        body: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDplYnNpOnpaZUt5RUpmVVRHd2FqaE55Tlg5Mjh6I1NvMUhJUnQwS3FmMF9CU3dxdjRWTU5na2F4M21DRjlJamNRSndNbkIzYnMifQ.eyJpYXQiOjE2OTE0OTgyNzgsImp0aSI6InVybjp1dWlkOjdmYWIyMmZiLWY1Y2UtNDczNi1hNzQwLWY5YjQzNmMxYmI3NSIsIm5iZiI6MTY5MTQ5ODI3OCwiZXhwIjoxNzIzMDM0Mjc4LCJzdWIiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiIsInZjIjp7IkBjb250ZXh0IjpbImh0dHBzOi8vd3d3LnczLm9yZy8yMDE4L2NyZWRlbnRpYWxzL3YxIl0sImlkIjoidXJuOnV1aWQ6N2ZhYjIyZmItZjVjZS00NzM2LWE3NDAtZjliNDM2YzFiYjc1IiwidHlwZSI6WyJWZXJpZmlhYmxlQ3JlZGVudGlhbCIsIlZlcmlmaWFibGVBdHRlc3RhdGlvbiIsIlZlcmlmaWFibGVBY2NyZWRpdGF0aW9uIiwiVmVyaWZpYWJsZUFjY3JlZGl0YXRpb25Ub0F0dGVzdCJdLCJpc3N1ZXIiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiIsImlzc3VhbmNlRGF0ZSI6IjIwMjMtMDgtMDhUMTI6Mzc6NThaIiwiaXNzdWVkIjoiMjAyMy0wOC0wOFQxMjozNzo1OFoiLCJ2YWxpZEZyb20iOiIyMDIzLTA4LTA4VDEyOjM3OjU4WiIsImV4cGlyYXRpb25EYXRlIjoiMjAyNC0wOC0wN1QxMjozNzo1OFoiLCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6ImRpZDplYnNpOnpaZUt5RUpmVVRHd2FqaE55Tlg5Mjh6IiwiYWNjcmVkaXRlZEZvciI6W3sic2NoZW1hSWQiOiJodHRwczovL2FwaS1waWxvdC5lYnNpLmV1L3RydXN0ZWQtc2NoZW1hcy1yZWdpc3RyeS92My9zY2hlbWFzL3ozTWdVRlVrYjcyMnVxNHgzZHY1eUFKbW5ObXpERmVLNVVDOHg4M1FvZUxKTSIsInR5cGVzIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiVmVyaWZpYWJsZUF0dGVzdGF0aW9uIiwiVmVyaWZpYWJsZUF1dGhvcmlzYXRpb25Gb3JUcnVzdENoYWluIl19XSwicmVzZXJ2ZWRBdHRyaWJ1dGVJZCI6ImNmODllNDdlMjYwZWRhNTNiYjE5OTA5NmNhOTczNDc3OTBjODRkMmM4YTVmMmNlM2Y0MTFlYWJhMTRkMDAwM2UifSwiY3JlZGVudGlhbFNjaGVtYSI6eyJpZCI6Imh0dHBzOi8vYXBpLXBpbG90LmVic2kuZXUvdHJ1c3RlZC1zY2hlbWFzLXJlZ2lzdHJ5L3YzL3NjaGVtYXMvempWRk52YkVCUEFyM2E3MjREdHRpb1pwZ1ptTnI3NUJCdFJ6WnFrN3BrRGUiLCJ0eXBlIjoiRnVsbEpzb25TY2hlbWFWYWxpZGF0b3IyMDIxIn19LCJpc3MiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiJ9.AeYv7qp8OE-cVvcSDmDo6X8u8sgCZ40hVE2flaLQSg82wlgS_yGp2FOKjr-nKwflEKoY8LBX-6fQfvFrEpjMnw
+                        issuerType: RootTAO
+                        tao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                        rootTao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+        "400":
+          description: Bad Request
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {did} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {did} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                DID Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-issuers-registry/v5/issuers/{did}/attributes:
+    get:
+      operationId: get-issuer-attributes
+      summary: List attributes
+      description: Returns a list of attributes of a trusted issuer.
+      tags:
+        - Issuers
+      parameters:
+        - name: did
+          in: path
+          schema:
+            type: string
+          examples:
+            did:
+              description: Valid Pilot DID
+              value: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+          required: true
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: URI to attributes
+                  items:
+                    type: array
+                    description: List of attributes
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Attribute ID. (hash, sha256)
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items in a collection
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page
+                  links:
+                    $ref: "#/components/schemas/links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes?page[after]=1&page[size]=10
+                    items:
+                      - id: 447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14
+                        href: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14
+                    total: 1
+                    pageSize: 10
+                    links:
+                      first: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes?page[after]=1&page[size]=10
+                      prev: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes?page[after]=1&page[size]=10
+                      next: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes?page[after]=1&page[size]=10
+                      last: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes?page[after]=1&page[size]=10
+        "400":
+          description: Bad Request Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: PageSize should not be greater than 50
+        "404":
+          description: Not found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                DID Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-issuers-registry/v5/issuers/{did}/attributes/{attributeId}:
+    get:
+      operationId: get-issuer-attribute
+      summary: Get an attribute
+      description: Returns the latest revision of an issuer attribute.
+      tags:
+        - Issuers
+      parameters:
+        - name: did
+          in: path
+          schema:
+            type: string
+          examples:
+            did:
+              description: Valid Pilot DID
+              value: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+          required: true
+        - name: attributeId
+          in: path
+          schema:
+            type: string
+          examples:
+            attributeId:
+              description: Valid Pilot attributeId
+              value: 447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/attributeDetails"
+              examples:
+                Success:
+                  value:
+                    did: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                    attribute:
+                      hash: 447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14
+                      body: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDplYnNpOnpaZUt5RUpmVVRHd2FqaE55Tlg5Mjh6I1NvMUhJUnQwS3FmMF9CU3dxdjRWTU5na2F4M21DRjlJamNRSndNbkIzYnMifQ.eyJpYXQiOjE2OTE0OTgyNzgsImp0aSI6InVybjp1dWlkOjdmYWIyMmZiLWY1Y2UtNDczNi1hNzQwLWY5YjQzNmMxYmI3NSIsIm5iZiI6MTY5MTQ5ODI3OCwiZXhwIjoxNzIzMDM0Mjc4LCJzdWIiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiIsInZjIjp7IkBjb250ZXh0IjpbImh0dHBzOi8vd3d3LnczLm9yZy8yMDE4L2NyZWRlbnRpYWxzL3YxIl0sImlkIjoidXJuOnV1aWQ6N2ZhYjIyZmItZjVjZS00NzM2LWE3NDAtZjliNDM2YzFiYjc1IiwidHlwZSI6WyJWZXJpZmlhYmxlQ3JlZGVudGlhbCIsIlZlcmlmaWFibGVBdHRlc3RhdGlvbiIsIlZlcmlmaWFibGVBY2NyZWRpdGF0aW9uIiwiVmVyaWZpYWJsZUFjY3JlZGl0YXRpb25Ub0F0dGVzdCJdLCJpc3N1ZXIiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiIsImlzc3VhbmNlRGF0ZSI6IjIwMjMtMDgtMDhUMTI6Mzc6NThaIiwiaXNzdWVkIjoiMjAyMy0wOC0wOFQxMjozNzo1OFoiLCJ2YWxpZEZyb20iOiIyMDIzLTA4LTA4VDEyOjM3OjU4WiIsImV4cGlyYXRpb25EYXRlIjoiMjAyNC0wOC0wN1QxMjozNzo1OFoiLCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6ImRpZDplYnNpOnpaZUt5RUpmVVRHd2FqaE55Tlg5Mjh6IiwiYWNjcmVkaXRlZEZvciI6W3sic2NoZW1hSWQiOiJodHRwczovL2FwaS1waWxvdC5lYnNpLmV1L3RydXN0ZWQtc2NoZW1hcy1yZWdpc3RyeS92My9zY2hlbWFzL3ozTWdVRlVrYjcyMnVxNHgzZHY1eUFKbW5ObXpERmVLNVVDOHg4M1FvZUxKTSIsInR5cGVzIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiVmVyaWZpYWJsZUF0dGVzdGF0aW9uIiwiVmVyaWZpYWJsZUF1dGhvcmlzYXRpb25Gb3JUcnVzdENoYWluIl19XSwicmVzZXJ2ZWRBdHRyaWJ1dGVJZCI6ImNmODllNDdlMjYwZWRhNTNiYjE5OTA5NmNhOTczNDc3OTBjODRkMmM4YTVmMmNlM2Y0MTFlYWJhMTRkMDAwM2UifSwiY3JlZGVudGlhbFNjaGVtYSI6eyJpZCI6Imh0dHBzOi8vYXBpLXBpbG90LmVic2kuZXUvdHJ1c3RlZC1zY2hlbWFzLXJlZ2lzdHJ5L3YzL3NjaGVtYXMvempWRk52YkVCUEFyM2E3MjREdHRpb1pwZ1ptTnI3NUJCdFJ6WnFrN3BrRGUiLCJ0eXBlIjoiRnVsbEpzb25TY2hlbWFWYWxpZGF0b3IyMDIxIn19LCJpc3MiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiJ9.AeYv7qp8OE-cVvcSDmDo6X8u8sgCZ40hVE2flaLQSg82wlgS_yGp2FOKjr-nKwflEKoY8LBX-6fQfvFrEpjMnw
+                      issuerType: RootTAO
+                      tao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                      rootTao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+        "400":
+          description: Bad Request
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {did} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {did} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                DID Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-issuers-registry/v5/issuers/{did}/attributes/{attributeId}/revisions:
+    get:
+      operationId: get-issuer-attribute-revisions
+      summary: List revisions
+      description: Returns a list of revisions of an attribute.
+      tags:
+        - Issuers
+      parameters:
+        - name: did
+          in: path
+          schema:
+            type: string
+          examples:
+            did:
+              description: Valid Pilot DID
+              value: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+          required: true
+        - name: attributeId
+          in: path
+          schema:
+            type: string
+          examples:
+            attributeId:
+              description: Valid Pilot attributeId
+              value: 447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14
+          required: true
+        - in: query
+          name: version
+          description: |
+            Version of the endpoint to use. Defaults to the latest version.
+          required: false
+          schema:
+            type: string
+            enum:
+              - deprecated
+              - latest
+          example: "deprecated"
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: URI to attributes
+                  items:
+                    type: array
+                    description: list of attribute revisions
+                    items:
+                      anyOf:
+                        - $ref: "#/components/schemas/attribute" # deprecated
+                        - type: object
+                          properties:
+                            id:
+                              type: string
+                              description: Revision ID
+                            href:
+                              type: string
+                              description: Link to the revision
+                  total:
+                    type: integer
+                    description: Total number of items in a collection
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page
+                  links:
+                    $ref: "#/components/schemas/links"
+              examples:
+                List of revisions:
+                  value:
+                    self: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14/revisions?page[after]=1&page[size]=10
+                    items:
+                      - id: 4ec707f1d31f0e98996ec662d7d9820874b4dd23cdc03f78a2ab1483c3969f3a
+                        href: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14/revisions/4ec707f1d31f0e98996ec662d7d9820874b4dd23cdc03f78a2ab1483c3969f3a
+                      - id: 447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14
+                        href: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14/revisions/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14
+                    total: 2
+                    pageSize: 10
+                    links:
+                      first: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14/revisions?page[after]=1&page[size]=10
+                      prev: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14/revisions?page[after]=1&page[size]=10
+                      next: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14/revisions?page[after]=1&page[size]=10
+                      last: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14/revisions?page[after]=1&page[size]=10
+                List of revisions (deprecated):
+                  value:
+                    self: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14/revisions?page[after]=1&page[size]=10
+                    items:
+                      - hash: cf89e47e260eda53bb199096ca97347790c84d2c8a5f2ce3f411eaba14d0003e
+                        body: ""
+                        issuerType: RootTAO
+                        tao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                        rootTao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                      - hash: 6ffc001fcc76bceb96847b184a27c086c00c59da25ed0b5c6531097fe34f00c3
+                        body: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDplYnNpOnpaZUt5RUpmVVRHd2FqaE55Tlg5Mjh6I1NvMUhJUnQwS3FmMF9CU3dxdjRWTU5na2F4M21DRjlJamNRSndNbkIzYnMifQ.eyJpYXQiOjE2OTE0ODUxMzYsImp0aSI6InVybjp1dWlkOjE4MzAyOWMwLTA1NzgtNGUzZS1iYThjLTc3NzBkMGY0ZWM2MCIsIm5iZiI6MTY5MTQ4NTEzNiwiZXhwIjoxNzIzMDIxMTM2LCJzdWIiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiIsInZjIjp7IkBjb250ZXh0IjpbImh0dHBzOi8vd3d3LnczLm9yZy8yMDE4L2NyZWRlbnRpYWxzL3YxIl0sImlkIjoidXJuOnV1aWQ6MTgzMDI5YzAtMDU3OC00ZTNlLWJhOGMtNzc3MGQwZjRlYzYwIiwidHlwZSI6WyJWZXJpZmlhYmxlQ3JlZGVudGlhbCIsIlZlcmlmaWFibGVBdHRlc3RhdGlvbiIsIlZlcmlmaWFibGVBY2NyZWRpdGF0aW9uIiwiVmVyaWZpYWJsZUFjY3JlZGl0YXRpb25Ub0F0dGVzdCJdLCJpc3N1ZXIiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiIsImlzc3VhbmNlRGF0ZSI6IjIwMjMtMDgtMDhUMDg6NTg6NTZaIiwiaXNzdWVkIjoiMjAyMy0wOC0wOFQwODo1ODo1NloiLCJ2YWxpZEZyb20iOiIyMDIzLTA4LTA4VDA4OjU4OjU2WiIsImV4cGlyYXRpb25EYXRlIjoiMjAyNC0wOC0wN1QwODo1ODo1NloiLCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6ImRpZDplYnNpOnpaZUt5RUpmVVRHd2FqaE55Tlg5Mjh6IiwiYWNjcmVkaXRlZEZvciI6W3sic2NoZW1hSWQiOiJkb21haW4vdHJ1c3RlZC1zY2hlbWFzLXJlZ2lzdHJ5L3YzL3NjaGVtYXMvejNNZ1VGVWtiNzIydXE0eDNkdjV5QUptbk5tekRGZUs1VUM4eDgzUW9lTEpNIiwidHlwZXMiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlQXR0ZXN0YXRpb24iLCJWZXJpZmlhYmxlQXV0aG9yaXNhdGlvbkZvclRydXN0Q2hhaW4iXX1dLCJyZXNlcnZlZEF0dHJpYnV0ZUlkIjoiY2Y4OWU0N2UyNjBlZGE1M2JiMTk5MDk2Y2E5NzM0Nzc5MGM4NGQyYzhhNWYyY2UzZjQxMWVhYmExNGQwMDAzZSJ9LCJjcmVkZW50aWFsU2NoZW1hIjp7ImlkIjoiZG9tYWluL3RydXN0ZWQtc2NoZW1hcy1yZWdpc3RyeS92My9zY2hlbWFzL3pqVkZOdmJFQlBBcjNhNzI0RHR0aW9acGdabU5yNzVCQnRSelpxazdwa0RlIiwidHlwZSI6IkZ1bGxKc29uU2NoZW1hVmFsaWRhdG9yMjAyMSJ9fSwiaXNzIjoiZGlkOmVic2k6elplS3lFSmZVVEd3YWpoTnlOWDkyOHoifQ.-5UTPBiym6ks8_GNYL1K4jvS-rZ1fo4O5ZKvOqsA_cR0-ruYdxqrnbQlernH7kADGTttR3Alp7s9PjFxbOUe5w
+                        issuerType: RootTAO
+                        tao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                        rootTao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                      - hash: 314b372250375b81f5e386df243e44adb3e4de7ef31dd84fa25e93346de99eab
+                        body: ""
+                        issuerType: RootTAO
+                        tao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                        rootTao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                      - hash: 447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14
+                        body: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDplYnNpOnpaZUt5RUpmVVRHd2FqaE55Tlg5Mjh6I1NvMUhJUnQwS3FmMF9CU3dxdjRWTU5na2F4M21DRjlJamNRSndNbkIzYnMifQ.eyJpYXQiOjE2OTE0OTgyNzgsImp0aSI6InVybjp1dWlkOjdmYWIyMmZiLWY1Y2UtNDczNi1hNzQwLWY5YjQzNmMxYmI3NSIsIm5iZiI6MTY5MTQ5ODI3OCwiZXhwIjoxNzIzMDM0Mjc4LCJzdWIiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiIsInZjIjp7IkBjb250ZXh0IjpbImh0dHBzOi8vd3d3LnczLm9yZy8yMDE4L2NyZWRlbnRpYWxzL3YxIl0sImlkIjoidXJuOnV1aWQ6N2ZhYjIyZmItZjVjZS00NzM2LWE3NDAtZjliNDM2YzFiYjc1IiwidHlwZSI6WyJWZXJpZmlhYmxlQ3JlZGVudGlhbCIsIlZlcmlmaWFibGVBdHRlc3RhdGlvbiIsIlZlcmlmaWFibGVBY2NyZWRpdGF0aW9uIiwiVmVyaWZpYWJsZUFjY3JlZGl0YXRpb25Ub0F0dGVzdCJdLCJpc3N1ZXIiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiIsImlzc3VhbmNlRGF0ZSI6IjIwMjMtMDgtMDhUMTI6Mzc6NThaIiwiaXNzdWVkIjoiMjAyMy0wOC0wOFQxMjozNzo1OFoiLCJ2YWxpZEZyb20iOiIyMDIzLTA4LTA4VDEyOjM3OjU4WiIsImV4cGlyYXRpb25EYXRlIjoiMjAyNC0wOC0wN1QxMjozNzo1OFoiLCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6ImRpZDplYnNpOnpaZUt5RUpmVVRHd2FqaE55Tlg5Mjh6IiwiYWNjcmVkaXRlZEZvciI6W3sic2NoZW1hSWQiOiJodHRwczovL2FwaS1waWxvdC5lYnNpLmV1L3RydXN0ZWQtc2NoZW1hcy1yZWdpc3RyeS92My9zY2hlbWFzL3ozTWdVRlVrYjcyMnVxNHgzZHY1eUFKbW5ObXpERmVLNVVDOHg4M1FvZUxKTSIsInR5cGVzIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiVmVyaWZpYWJsZUF0dGVzdGF0aW9uIiwiVmVyaWZpYWJsZUF1dGhvcmlzYXRpb25Gb3JUcnVzdENoYWluIl19XSwicmVzZXJ2ZWRBdHRyaWJ1dGVJZCI6ImNmODllNDdlMjYwZWRhNTNiYjE5OTA5NmNhOTczNDc3OTBjODRkMmM4YTVmMmNlM2Y0MTFlYWJhMTRkMDAwM2UifSwiY3JlZGVudGlhbFNjaGVtYSI6eyJpZCI6Imh0dHBzOi8vYXBpLXBpbG90LmVic2kuZXUvdHJ1c3RlZC1zY2hlbWFzLXJlZ2lzdHJ5L3YzL3NjaGVtYXMvempWRk52YkVCUEFyM2E3MjREdHRpb1pwZ1ptTnI3NUJCdFJ6WnFrN3BrRGUiLCJ0eXBlIjoiRnVsbEpzb25TY2hlbWFWYWxpZGF0b3IyMDIxIn19LCJpc3MiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiJ9.AeYv7qp8OE-cVvcSDmDo6X8u8sgCZ40hVE2flaLQSg82wlgS_yGp2FOKjr-nKwflEKoY8LBX-6fQfvFrEpjMnw
+                        issuerType: RootTAO
+                        tao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                        rootTao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                    total: 4
+                    pageSize: 10
+                    links:
+                      first: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14/revisions?page[after]=1&page[size]=10
+                      prev: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14/revisions?page[after]=1&page[size]=10
+                      next: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14/revisions?page[after]=1&page[size]=10
+                      last: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/attributes/447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14/revisions?page[after]=1&page[size]=10
+        "400":
+          description: Bad Request Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: PageSize should not be greater than 50
+        "404":
+          description: Not found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                DID Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-issuers-registry/v5/issuers/{did}/attributes/{attributeId}/revisions/{revisionId}:
+    get:
+      operationId: get-issuer-attribute-revision
+      summary: Get a revision of an attribute
+      description: Returns the revision of an issuer attribute.
+      tags:
+        - Issuers
+      parameters:
+        - name: did
+          in: path
+          schema:
+            type: string
+          examples:
+            did:
+              description: Valid Pilot DID
+              value: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+          required: true
+        - name: attributeId
+          in: path
+          schema:
+            type: string
+          examples:
+            attributeId:
+              description: Valid Pilot attributeId
+              value: 447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14
+          required: true
+        - name: revisionId
+          in: path
+          schema:
+            type: string
+          examples:
+            revisionId:
+              description: Valid Pilot revisionId
+              value: 447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/attributeDetails"
+              examples:
+                Success:
+                  value:
+                    did: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                    attribute:
+                      hash: 447867bafab4c4ad26d4f4650e2390f92a831b6343b7c36ecb7c51fee336fa14
+                      body: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDplYnNpOnpaZUt5RUpmVVRHd2FqaE55Tlg5Mjh6I1NvMUhJUnQwS3FmMF9CU3dxdjRWTU5na2F4M21DRjlJamNRSndNbkIzYnMifQ.eyJpYXQiOjE2OTE0OTgyNzgsImp0aSI6InVybjp1dWlkOjdmYWIyMmZiLWY1Y2UtNDczNi1hNzQwLWY5YjQzNmMxYmI3NSIsIm5iZiI6MTY5MTQ5ODI3OCwiZXhwIjoxNzIzMDM0Mjc4LCJzdWIiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiIsInZjIjp7IkBjb250ZXh0IjpbImh0dHBzOi8vd3d3LnczLm9yZy8yMDE4L2NyZWRlbnRpYWxzL3YxIl0sImlkIjoidXJuOnV1aWQ6N2ZhYjIyZmItZjVjZS00NzM2LWE3NDAtZjliNDM2YzFiYjc1IiwidHlwZSI6WyJWZXJpZmlhYmxlQ3JlZGVudGlhbCIsIlZlcmlmaWFibGVBdHRlc3RhdGlvbiIsIlZlcmlmaWFibGVBY2NyZWRpdGF0aW9uIiwiVmVyaWZpYWJsZUFjY3JlZGl0YXRpb25Ub0F0dGVzdCJdLCJpc3N1ZXIiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiIsImlzc3VhbmNlRGF0ZSI6IjIwMjMtMDgtMDhUMTI6Mzc6NThaIiwiaXNzdWVkIjoiMjAyMy0wOC0wOFQxMjozNzo1OFoiLCJ2YWxpZEZyb20iOiIyMDIzLTA4LTA4VDEyOjM3OjU4WiIsImV4cGlyYXRpb25EYXRlIjoiMjAyNC0wOC0wN1QxMjozNzo1OFoiLCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6ImRpZDplYnNpOnpaZUt5RUpmVVRHd2FqaE55Tlg5Mjh6IiwiYWNjcmVkaXRlZEZvciI6W3sic2NoZW1hSWQiOiJodHRwczovL2FwaS1waWxvdC5lYnNpLmV1L3RydXN0ZWQtc2NoZW1hcy1yZWdpc3RyeS92My9zY2hlbWFzL3ozTWdVRlVrYjcyMnVxNHgzZHY1eUFKbW5ObXpERmVLNVVDOHg4M1FvZUxKTSIsInR5cGVzIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiVmVyaWZpYWJsZUF0dGVzdGF0aW9uIiwiVmVyaWZpYWJsZUF1dGhvcmlzYXRpb25Gb3JUcnVzdENoYWluIl19XSwicmVzZXJ2ZWRBdHRyaWJ1dGVJZCI6ImNmODllNDdlMjYwZWRhNTNiYjE5OTA5NmNhOTczNDc3OTBjODRkMmM4YTVmMmNlM2Y0MTFlYWJhMTRkMDAwM2UifSwiY3JlZGVudGlhbFNjaGVtYSI6eyJpZCI6Imh0dHBzOi8vYXBpLXBpbG90LmVic2kuZXUvdHJ1c3RlZC1zY2hlbWFzLXJlZ2lzdHJ5L3YzL3NjaGVtYXMvempWRk52YkVCUEFyM2E3MjREdHRpb1pwZ1ptTnI3NUJCdFJ6WnFrN3BrRGUiLCJ0eXBlIjoiRnVsbEpzb25TY2hlbWFWYWxpZGF0b3IyMDIxIn19LCJpc3MiOiJkaWQ6ZWJzaTp6WmVLeUVKZlVUR3dhamhOeU5YOTI4eiJ9.AeYv7qp8OE-cVvcSDmDo6X8u8sgCZ40hVE2flaLQSg82wlgS_yGp2FOKjr-nKwflEKoY8LBX-6fQfvFrEpjMnw
+                      issuerType: RootTAO
+                      tao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+                      rootTao: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+        "400":
+          description: Bad Request
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {did} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {did} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                DID Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-issuers-registry/v5/issuers/{did}/proxies:
+    get:
+      operationId: get-issuer-proxies
+      summary: List proxies
+      description: Returns a list of proxies of a trusted issuer.
+      tags:
+        - Issuers
+      parameters:
+        - name: did
+          in: path
+          schema:
+            type: string
+          examples:
+            did:
+              description: Valid Pilot DID
+              value: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+          required: true
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: URI to proxies
+                  items:
+                    type: array
+                    description: List of proxies
+                    items:
+                      type: object
+                      properties:
+                        proxyId:
+                          type: string
+                          description: Proxy ID. (hash, sha256)
+                        href:
+                          type: string
+                          description: Link to the resource
+                  total:
+                    type: integer
+                    description: Total number of items in a collection
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page
+                  links:
+                    $ref: "#/components/schemas/links"
+              examples:
+                Success:
+                  value:
+                    items:
+                      - proxyId: "0x408db59ec66f14efe30eed366ad57a7f6863fbbb18edd3d3bf15837dc3a494a6"
+                        href: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zZeKyEJfUTGwajhNyNX928z/proxies/0x408db59ec66f14efe30eed366ad57a7f6863fbbb18edd3d3bf15837dc3a494a6
+                    total: 1
+        "400":
+          description: Bad Request Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {did} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {did} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                DID Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-issuers-registry/v5/issuers/{did}/proxies/{proxyId}:
+    get:
+      operationId: get-issuer-proxy
+      summary: Get a proxy
+      description: Returns an issuer proxy identified by its proxy ID.
+      tags:
+        - Issuers
+      parameters:
+        - name: did
+          in: path
+          schema:
+            type: string
+          examples:
+            did:
+              description: Valid Pilot DID
+              value: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+          required: true
+        - name: proxyId
+          in: path
+          schema:
+            type: string
+          examples:
+            proxyId:
+              description: Valid Pilot proxyId
+              value: "0x408db59ec66f14efe30eed366ad57a7f6863fbbb18edd3d3bf15837dc3a494a6"
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/proxy"
+              examples:
+                Success:
+                  value:
+                    prefix: https://example.com
+                    headers:
+                      authorization: Bearer 6e9b01cb7b2a269be20aaebc17657d7d
+                    testSuffix: /creds/1
+        "400":
+          description: Bad Request
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {did} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {did} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                DID Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-issuers-registry/v5/issuers/{did}/proxies/{proxyId}/{path}:
+    get:
+      operationId: get-issuer-proxy-path
+      summary: Get status list credential
+      description: Retrieves a StatusList2021Credential or BitstringStatusListCredential JWT through the issuer's proxy.
+      tags:
+        - Issuers
+      parameters:
+        - name: did
+          in: path
+          schema:
+            type: string
+          examples:
+            did:
+              description: Valid Pilot DID
+              value: did:ebsi:zZeKyEJfUTGwajhNyNX928z
+          required: true
+        - name: proxyId
+          in: path
+          schema:
+            type: string
+          examples:
+            proxyId:
+              description: Valid Pilot proxyId
+              value: "0x408db59ec66f14efe30eed366ad57a7f6863fbbb18edd3d3bf15837dc3a494a6"
+          required: true
+        - name: path
+          in: path
+          schema:
+            type: string
+          examples:
+            Status list credential path:
+              description: Path to a StatusList2021Credential or BitstringStatusListCredential
+              value: credentials/status/1
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                Success:
+                  value: eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJKV1QiLCJraWQiOiJkaWQ6ZWJzaTp6cGlESjZaWExnTmU3UGVTMjdjdGhURiNrZXlzLTEifQ.eyJqdGkiOiJodHRwczovL2V4YW1wbGUubmV0L2NyZWQvMSIsInN1YiI6ImRpZDplYnNpOnpwaURKNlpYTGdOZTdQZVMyN2N0aFRGIiwiaXNzIjoiZGlkOmVic2k6enBpREo2WlhMZ05lN1BlUzI3Y3RoVEYiLCJuYmYiOjE2MTc2MzI4NjAsImlhdCI6MTYxNzYzMjg2MCwidmMiOnsiQGNvbnRleHQiOlsiaHR0cHM6Ly93d3cudzMub3JnLzIwMTgvY3JlZGVudGlhbHMvdjEiLCJodHRwczovL3czaWQub3JnL3ZjL3N0YXR1cy1saXN0LzIwMjEvdjEiXSwiaWQiOiJodHRwczovL2V4YW1wbGUubmV0L2NyZWQvMSIsInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJTdGF0dXNMaXN0MjAyMUNyZWRlbnRpYWwiXSwiaXNzdWVyIjoiZGlkOmVic2k6enBpREo2WlhMZ05lN1BlUzI3Y3RoVEYiLCJpc3N1ZWQiOiIyMDIxLTA0LTA1VDE0OjI3OjQwWiIsImlzc3VhbmNlRGF0ZSI6IjIwMjEtMDQtMDVUMTQ6Mjc6NDBaIiwidmFsaWRGcm9tIjoiMjAyMS0wNC0wNVQxNDoyNzo0MFoiLCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6ImRpZDplYnNpOnpwaURKNlpYTGdOZTdQZVMyN2N0aFRGIiwidHlwZSI6IlN0YXR1c0xpc3QyMDIxIiwic3RhdHVzUHVycG9zZSI6InJldm9jYXRpb24iLCJlbmNvZGVkTGlzdCI6Ikg0c0lBQUFBQUFBQUEtM0JNUUVBQUFEQ29QVlBiUXdmb0FBQUFBQUFBQUFBQUFBQUFBQUFBSUMzQVliU1ZLc0FRQUFBIn0sImNyZWRlbnRpYWxTY2hlbWEiOlt7ImlkIjoiaHR0cHM6Ly9hcGktdGVzdC5lYnNpLmV1L3RydXN0ZWQtc2NoZW1hcy1yZWdpc3RyeS92Mi9zY2hlbWFzLzB4MjMwMzllNjM1NmVhNmI3MDNjZTY3MmU3Y2ZhYzBiNDI3NjViMTUwZjYzZGY3OGUyYmQxOGFlNzg1Nzg3ZjZhMiIsInR5cGUiOiJGdWxsSnNvblNjaGVtYVZhbGlkYXRvcjIwMjEifSx7ImlkIjoiaHR0cHM6Ly9hcGktdGVzdC5lYnNpLmV1L3RydXN0ZWQtc2NoZW1hcy1yZWdpc3RyeS92Mi9zY2hlbWFzLzB4NjBkMmI2YTlhOTIzZGFjZmE2YzJjYjAzZDEwMWI5MmMyYjI2ODNlZDVlMjQ4ZmZhOGZiNDE0ZWRiYjZiOTY3MCIsInR5cGUiOiJGdWxsSnNvblNjaGVtYVZhbGlkYXRvcjIwMjEifV19fQ.j_rSoYiqLjo0HQhnq1Gu4FMPLbstfG7ONYjW0N5gBFdtCJb-Mel6kVplBHCTWC9GY2GHEOhYDpI7wo5leVa0ZQ
+        "400":
+          description: Bad Request
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {did} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {did} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                DID Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-issuers-registry/v5/abi:
+    get:
+      operationId: get-abi
+      summary: Get ABI
+      description: Returns the ABI of TIR SC v5.
+      tags:
+        - ABI
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                description: The ABI of TIR SC v5.
+  /trusted-issuers-registry/v5/jsonrpc:
+    post:
+      operationId: post-jsonrpc
+      summary: JSON-RPC API
+      description: |
+        The JSON-RPC API provides methods assisting the construction of blockchain transactions for
+        TIR SC operations, and interaction with the ledger.
+      tags:
+        - JSON-RPC
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: |
+          The body follows the
+          [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification).
+
+          It requires the following fields:
+
+          - **jsonrpc**: must be exactly "2.0"
+          - **method**: method to be invoked
+          - **params**: method parameters
+          - **id**: identifier established by the client
+
+          ### API Methods
+
+          #### setAttributeMetadata
+
+          Requires an access token with `tir_write` scope.
+
+          Call to build an unsigned transaction to set the metadata of an attribute.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: DID of the issuer
+          - **revisionId**: Attribute ID (hexadecimal string prefixed with 0x)
+          - **issuerType**: 1 (RootTAO), 2 (TAO), 3 (TI), or 4 (Revoked)
+          - **taoDid**: DID of the TAO accrediting the issuer
+          - **attributeIdTao**: Attribute ID that accredits taoDid as TAO or RootTAO (hexadecimal string prefixed with 0x)
+
+          #### setAttributeData
+
+          Requires an access token with `tir_invite` or `tir_write` scope.
+
+          Call to build an unsigned transaction to set an attribute.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: DID of the issuer
+          - **attributeId**: ID of the attribute to set (hexadecimal string prefixed with 0x)
+          - **attributeData**: Verifiable credential converted to an hexadecimal string prefixed with 0x
+
+          #### addIssuerProxy
+
+          Requires an access token with `tir_write` scope.
+
+          Call to build an unsigned transaction to insert a new proxy to an issuer. It can be
+          added by the issuer itself or an admin registered in the Trusted Policies Registry
+          to update issuers.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: DID of the issuer
+          - **proxyData**: Proxy configuration to be used during the verification of credentials. For the
+            registration to be accepted, the configured proxy must serve a status list which is valid and
+            signed by the issuer requesting the proxy. The validation is done by combining "prefix" with
+            "testSuffix" and executed before accepting the registration. Proxy must be configured before
+            any VCs are issued. The validation will fail if the credential status proxy doesn't exist.
+            It must be a JSON object converted to a string. Example: `JSON.stringify({"prefix":"https://example.net","headers":{"Authorization":"Bearer 1234567890"},"testSuffix":"/cred/1"})`.
+
+          #### updateIssuerProxy
+
+          Requires an access token with `tir_write` scope.
+
+          Call to build an unsigned transaction to update an existing proxy of an issuer. It can be
+          updated by the issuer itself or an admin registered in the Trusted Policies Registry
+          to update issuers.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: DID of the issuer
+          - **proxyId**: ID of the existing proxy (hexadecimal string prefixed with 0x)
+          - **proxyData**: Proxy configuration to be used during the verification of credentials. For the
+            registration to be accepted, the configured proxy must serve a status list which is valid and
+            signed by the issuer requesting the proxy. The validation is done by combining "prefix" with
+            "testSuffix" and executed before accepting the registration. Proxy must be configured before
+            any VCs are issued. The validation will fail if the credential status proxy doesn't exist.
+            It must be a JSON object converted to a string. Example: `JSON.stringify({"prefix":"https://example.net","headers":{"Authorization":"Bearer 1234567890"},"testSuffix":"/cred/1"})`.
+
+          #### removeIssuerProxy
+
+          Requires an access token with `tir_write` scope.
+
+          Call to build an unsigned transaction to remove an existing proxy of an issuer. It can be
+          removed by the issuer itself or an admin registered in the Trusted Policies Registry
+          to update issuers.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **did**: DID of the issuer
+          - **proxyId**: ID of the existing proxy (hexadecimal string prefixed with 0x)
+
+          #### sendSignedTransaction
+
+          Requires an access token with `tir_invite` or `tir_write` scope.
+
+          Sends a signed transaction to the blockchain and returns the hash of the transaction.
+
+          **Warning: the transaction is not immediately processed. Make sure to check that the transaction has been successfully included in a block before moving on.**
+
+          You can get the [receipt of the transaction](https://besu.hyperledger.org/public-networks/reference/api/objects#transaction-receipt-object) by calling the [`eth_getTransactionReceipt`](https://besu.hyperledger.org/public-networks/reference/api#eth_gettransactionreceipt) method of [Ledger API's Besu endpoint](/apis/pilot/ledger/v4/post-blockchains-besu).
+
+          Receipts for pending transactions are not available, therefore you will have to wait until the transaction has been processed — usually a few seconds. We recommend you to poll the `eth_getTransactionReceipt` method until the receipt is available.
+
+          Once the receipt is available, you can check the `status` field to know if the transaction succeeded (`0x1`) or failed (`0x0`). If the transaction failed, the `revertReason` field will give you insights about the reason for the failure. You can learn more about the format of the revert reason in [Besu's documentation](https://besu.hyperledger.org/private-networks/how-to/send-transactions/revert-reason#revert-reason-format).
+        content:
+          application/json:
+            schema:
+              required:
+                - jsonrpc
+                - id
+                - method
+                - params
+              type: object
+              properties:
+                jsonrpc:
+                  description: Must be exactly "2.0"
+                  type: string
+                method:
+                  description: Method that needs to be invoked
+                  type: string
+                params:
+                  description: Array of parameters
+                  type: array
+                  items:
+                    type: object
+                id:
+                  description: Identifier established by the client
+                  type: integer
+                  example: 1
+            examples:
+              Build tx to set attribute metadata:
+                value:
+                  jsonrpc: "2.0"
+                  method: setAttributeMetadata
+                  params:
+                    - from: "0x8445fC96e27ceB0d1794be16a1Ac8BF5D765AACB"
+                      did: did:ebsi:zpxbBfHYA5GN45rS1tSEBJg
+                      revisionId: "0x3f4143c6f3a1c79bb32f45a6cbd90ee6bb2e2e71eadda99e371a4a144c53050f"
+                      issuerType: 3
+                      taoDid: did:ebsi:zj4sk7oEMx1SGNAzibWxVAV
+                      attributeIdTao: "0xbd6123874c340eaea25a1fc01785593c350fd9216ed3a69864549f8013d501b4"
+                  id: 856
+              Build tx to set attribute data:
+                value:
+                  jsonrpc: "2.0"
+                  method: setAttributeData
+                  params:
+                    - from: "0xD442e39AAd178Ec9DfD039aD048203D5d0122e61"
+                      did: did:ebsi:zpxbBfHYA5GN45rS1tSEBJg
+                      attributeId: "0x3f4143c6f3a1c79bb32f45a6cbd90ee6bb2e2e71eadda99e371a4a144c53050f"
+                      attributeData: "0x65794a68624763694f694a46557a49314e694973496e523563434936496b705856434973496d74705a434936496d52705a44706c596e4e704f6e70714e484e724e323946545867785530644f51587070596c6434566b465749306c5053586c55596b467a54444a52646c4a615a584e475a7a5a435a45705954455630527a45355747354e596d35454e316b304d4646355630456966512e65794a70595851694f6a45324f4441774f5451314e7a5973496d703061534936496e5679626a703164576c6b4f6d51354f474d795a6a52694c5459774f444d744e474577597930344e7a59784c54646c4d5468694d6a4a694d444d344f434973496d35695a6949364d5459344d4441354e4455334e6977695a586877496a6f784e7a45784e6a4d774e5463324c434a7a645749694f694a6b615751365a574a7a6154703663486869516d5a4957554531523034304e584a544d58525452554a4b5a794973496e5a6a496a7037496b426a623235305a586830496a7062496d68306448427a4f693876643364334c6e637a4c6d39795a7938794d4445344c324e795a57526c626e52705957787a4c335978496c3073496d6c6b496a6f6964584a754f6e5631615751365a446b34597a4a6d4e4749744e6a41344d7930305954426a4c5467334e6a45744e3255784f4749794d6d49774d7a67344969776964486c775a53493657794a575a584a705a6d6c68596d786c51334a6c5a47567564476c6862434973496c5a6c636d6c6d61574669624756426448526c6333526864476c7662694973496c5a6c636d6c6d615746696247564259324e795a575270644746306157397549697769566d567961575a7059574a735a55466a59334a6c5a476c305958527062323555623046306447567a64434a644c434a7063334e315a5849694f694a6b615751365a574a7a61547036616a527a617a6476525531344d564e48546b463661574a5865465a4256694973496d6c7a63335668626d4e6c524746305a534936496a49774d6a4d744d444d744d6a6c554d5449364e5459364d545a614969776961584e7a6457566b496a6f694d6a41794d7930774d7930794f5651784d6a6f314e6a6f784e6c6f694c434a32595778705a455a79623230694f6949794d44497a4c54417a4c544935564445794f6a55324f6a453257694973496d563463476c7959585270623235455958526c496a6f694d6a41794e4330774d7930794f4651784d6a6f314e6a6f784e6c6f694c434a6a636d566b5a5735306157467355335669616d566a6443493665794a705a434936496d52705a44706c596e4e704f6e707765474a435a6b685a51545648546a5131636c4d7864464e46516b706e4969776959574e6a636d566b6158526c5a455a76636949365733736963324e6f5a573168535751694f694a6f64485277637a6f764c32467761533177615778766443356c596e4e704c6d56314c33527964584e305a57517463324e6f5a573168637931795a57647063335279655339324d69397a5932686c6257467a4c336f7a54576456526c5672596a63794d6e56784e48677a5a4859316555464b6257354f62587045526d564c4e5656444f4867344d3146765a55784b54534973496e52356347567a496a7062496c5a6c636d6c6d6157466962475644636d566b5a5735306157467349697769566d567961575a7059574a735a5546306447567a644746306157397549697769566d567961575a7059574a735a55463164476876636d6c7a595852706232355562303975596d3968636d51694c434a445a584a3061575a70593246305a55396d56484a685a47567459584a72556d566e61584e30636d46306157397549697769566d567961575a7059574a735a556c6b496c3073496d787062576c30536e567961584e6b61574e3061573975496a6f696148523063484d364c79397764574a7361574e6864476c76626e4d755a585679623342684c6d56314c334a6c63323931636d4e6c4c32463164476876636d6c30655339686448557652565653496e3164665377696447567962584e505a6c567a5a53493665794a705a434936496d68306448427a4f693876595842704c58526c633351755a574a7a6153356c64533930636e567a6447566b4c576c7a6333566c636e4d74636d566e61584e30636e6b76646a517661584e7a645756796379396b615751365a574a7a61547036616a527a617a6476525531344d564e48546b463661574a5865465a42566939686448527961574a316447567a4c324a6b4e6a45794d7a67334e474d7a4e44426c595756684d6a56684d575a6a4d4445334f4455314f544e6a4d7a55775a6d51354d6a45325a57517a595459354f4459304e5451355a6a67774d544e6b4e544178596a51694c434a306558426c496a6f6953584e7a64574675593256445a584a3061575a70593246305a534a394c434a6a636d566b5a5735306157467355324e6f5a573168496a7037496d6c6b496a6f696148523063484d364c79396863476b746447567a6443356c596e4e704c6d56314c33527964584e305a57517463324e6f5a573168637931795a57647063335279655339324d69397a5932686c6257467a4c336f7a54576456526c5672596a63794d6e56784e48677a5a4859316555464b6257354f62587045526d564c4e5656444f4867344d3146765a55784b54534973496e5235634755694f694a4764577873536e4e76626c4e6a6147567459565a6862476c6b59585276636a49774d6a456966583073496d6c7a63794936496d52705a44706c596e4e704f6e70714e484e724e323946545867785530644f51587070596c6434566b4657496e302e3349614b35446f5a35704e6f54482d4b38484a3034366464326841394967446d344f37654d584373537332674e6370347775665f4f6b524c39354568434c67655f3138534e4857447a37597650373850574a646d7651"
+                  id: 502
+              Build tx to add a new issuer proxy:
+                value:
+                  jsonrpc: "2.0"
+                  method: addIssuerProxy
+                  params:
+                    - from: "0x8445fC96e27ceB0d1794be16a1Ac8BF5D765AACB"
+                      did: did:ebsi:zZviptEhFN1r2u18hhi7Hof
+                      proxyData: '{"prefix":"https://example.net","headers":{"Authorization":"Bearer 63829b578ccaa61f27c889ab270642f2"},"testSuffix":"/cred/1"}'
+                  id: 752
+              Build tx to update an issuer proxy:
+                value:
+                  jsonrpc: "2.0"
+                  method: updateIssuerProxy
+                  params:
+                    - from: "0x8445fC96e27ceB0d1794be16a1Ac8BF5D765AACB"
+                      did: did:ebsi:zZviptEhFN1r2u18hhi7Hof
+                      proxyId: "0xfb33cccb447605de75846617385f6d2aac28010f53a89ecb5ce151751c53c8d4"
+                      proxyData: '{"prefix":"https://example.net","headers":{"Authorization":"Bearer 63829b578ccaa61f27c889ab270642f2"},"testSuffix":"/cred/1"}'
+                  id: 667
+              Build tx to remove an issuer proxy:
+                value:
+                  jsonrpc: "2.0"
+                  method: removeIssuerProxy
+                  params:
+                    - from: "0x8445fC96e27ceB0d1794be16a1Ac8BF5D765AACB"
+                      did: did:ebsi:zZviptEhFN1r2u18hhi7Hof
+                      proxyId: "0xfb33cccb447605de75846617385f6d2aac28010f53a89ecb5ce151751c53c8d4"
+                  id: 667
+              Send Transaction:
+                description: Sends a signed transaction to the blockchain.
+                value:
+                  jsonrpc: "2.0"
+                  method: sendSignedTransaction
+                  params:
+                    - protocol: eth
+                      unsignedTransaction:
+                        from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                        to: "0xFde86148db58f57787C06BeAf63a9c3f789357b3"
+                        data: "0x0000..."
+                        nonce: "0x00"
+                        chainId: "0x1b3b"
+                        gasLimit: "0x10000"
+                        gasPrice: "0x00"
+                        value: "0x00"
+                      r: "0x..."
+                      s: "0x..."
+                      v: "0x..."
+                      signedRawTransaction: "--- signed raw transaction ---"
+                  id: 1
+      responses:
+        "200":
+          description: Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonRpcResponse"
+              examples:
+                Build tx:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 482
+                    result:
+                      from: "0x8445fC96e27ceB0d1794be16a1Ac8BF5D765AACB"
+                      to: "0xFdfbCE7F3c12A902B79e0ceB0DB2662331bBA1aF"
+                      data: "0x250f4d9700000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000120fb33cccb447605de75846617385f6d2aac28010f53a89ecb5ce151751c53c8d400000000000000000000000000000000000000000000000000000000000000206469643a656273693a7a5a766970744568464e31723275313868686937486f66000000000000000000000000000000000000000000000000000000000000000865794a68622e2e2e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000216469643a656273693a7a323536617342576d4842736a325a4e567847354d686b7000000000000000000000000000000000000000000000000000000000000000"
+                      value: "0x0"
+                      nonce: "0xb1d3"
+                      chainId: "0x181f"
+                      gasLimit: "0x1000000"
+                      gasPrice: "0x0"
+                Send Transaction:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    result: "0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331"
+        "400":
+          description: Bad request
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Request:
+                  $ref: "#/components/examples/BadRequest"
+                Invalid Token:
+                  $ref: "#/components/examples/InvalidToken"
+components:
+  schemas:
+    ProblemDetails:
+      title: Problem Details
+      description: A [Problem Details](https://datatracker.ietf.org/doc/html/rfc7807) object.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the problem type. When dereferenced,
+            it SHOULD provide human-readable documentation for the problem type.
+          default: about:blank
+        title:
+          type: string
+          description: |
+            A short summary of the problem type.
+          example: Internal Server Error
+        status:
+          type: integer
+          format: int32
+          description: |
+            The HTTP status code generated by the origin server for this occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          example: 500
+        detail:
+          type: string
+          description: |
+            A human readable explanation specific to this occurrence of the problem.
+          example: Connection timeout
+        instance:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the specific occurrence of the problem.
+            It may or may not yield further information if dereferenced.
+    links:
+      title: Links
+      description: Links model used for pagination.
+      type: object
+      properties:
+        last:
+          type: string
+          description: URI of the last page
+        prev:
+          type: string
+          description: URI of the previous page
+        next:
+          type: string
+          description: URI of the next page
+        first:
+          type: string
+          description: URI of the first page
+      x-examples:
+        Links:
+          first: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers?page[after]=1&page[size]=2
+          prev: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers?page[after]=2&page[size]=2
+          next: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers?page[after]=4&page[size]=2
+          last: https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers?page[after]=13&page[size]=2
+    JsonRpcResponse:
+      title: JSON-RPC Response
+      type: object
+      properties:
+        jsonrpc:
+          description: Must be exactly "2.0"
+          type: string
+        id:
+          description: Same identifier established by the client in the call
+          type: integer
+        result:
+          description: Result of the call
+          oneOf:
+            - type: object
+            - type: string
+    issuer:
+      title: Issuer
+      type: object
+      description: Issuer object.
+      properties:
+        did:
+          type: string
+          description: did of the issuer
+        attributes:
+          type: string
+          description: Link to issuer attributes
+        hasAttributes:
+          type: boolean
+          description: This boolean is true when at least one credential is registered. It is false when the issuer is created but none of the credentials has been accepted yet.
+    issuer__deprecated:
+      title: Issuer (deprecated)
+      type: object
+      description: Issuer object.
+      properties:
+        did:
+          type: string
+          description: did of the issuer
+        attributes:
+          type: array
+          description: Array of attributes
+          items:
+            $ref: "#/components/schemas/attribute"
+    attribute:
+      title: Attribute
+      type: object
+      description: Attribute object.
+      properties:
+        hash:
+          type: string
+          description: sha256 hash of the payload
+        body:
+          type: string
+          description: Base64 encoded content
+        issuerType:
+          type: string
+          description: RootTAO, TAO, TI, Revoked or Undefined
+        tao:
+          type: string
+          description: Trusted Accredited Organization that accredited the insertion of the attribute
+        rootTao:
+          type: string
+          description: Root chain of accreditations
+    attributeDetails:
+      title: Attribute details
+      type: object
+      description: Attribute details.
+      properties:
+        did:
+          type: string
+          description: DID of the attribute owner
+        attribute:
+          $ref: "#/components/schemas/attribute"
+    proxy:
+      title: Attribute
+      type: object
+      description: Attribute object.
+      properties:
+        headers:
+          type: object
+          description: Custom headers to be sent with the request
+          example:
+            authorization: Bearer 6e9b01cb7b2a269be20aaebc17657d7d
+        prefix:
+          type: string
+          description: Actual URI to which the request will be sent
+          example: https://example.com
+        testSuffix:
+          type: string
+          description: Suffix to be used when testing the proxy
+          example: /creds/1
+  examples:
+    BadRequest:
+      value:
+        title: Bad request
+        status: 400
+        detail: Bad request
+    InvalidToken:
+      value:
+        title: Invalid token
+        status: 400
+        detail: Invalid token
+    NotFound:
+      value:
+        title: Not found
+        status: 404
+        detail: Not found
+    InternalError:
+      value:
+        title: Internal error
+        status: 500
+        detail: Internal error
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+  - url: http://localhost
+    description: Local Computer Environment
+  - url: https://api-test.ebsi.eu
+    description: EBSI Test Environment
+  - url: https://api-pilot.ebsi.eu
+    description: EBSI Pilot Environment
+  - url: https://api-conformance.ebsi.eu
+    description: EBSI Conformance Environment

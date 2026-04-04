@@ -1,0 +1,1515 @@
+openapi: 3.1.0
+info:
+  title: Authorisation API v4
+  version: 4.0.0
+  description: |
+    The Authorisation API is a core EBSI service responsible for managing access to protected EBSI services. Legal Entities must present a valid Verifiable Authorisation or Verifiable Accreditation in the form of a Verifiable Presentation to obtain a short-lived access token, which is valid for two hours. The scope of these access tokens is limited according to the authorisations held by the Legal Entity.
+    Users receive access tokens by presenting a valid EBSI Verifiable Credential and proving ownership of their decentralised identifier (DID). There is one exception during the onboarding process: since the user does not yet have ownership of a DID, they are only required to present a `VerifiableAuthorisationToOnboard`.
+
+    The Authorisation API supports the following capabilities:
+
+    + [Authorisation Server discovery](https://openid.net/specs/openid-connect-discovery-1_0.html) the /.well-known/openid-configuration
+    + [OpenID for Verifiable Presentation](https://openid.net/specs/openid-4-verifiable-presentations-1_0-14.html) capabilities (v 0.14)
+    + [OIDC](https://openid.net/specs/openid-connect-core-1_0.html) capabilities (v1.0)
+    + [Presentation Exchange 2.1.1](https://identity.foundation/presentation-exchange/spec/v2.1.1/)
+
+    The EBSI Platform distinguishes between two types of users:
+    - **Identified Users:** Legal Entities who already use the trusted registries (DID registry and Trusted Issuer Registry).
+    - **Anonymous Users:** Users who can  only read public information through REST endpoints but cannot access JSON-RPC endpoints.
+
+    For more information see:
+    + [CLI Tool page](https://hub.ebsi.eu/tools/cli): Test the capabilities using the EBSI CLI tool
+  contact:
+    name: EBSI Support - Service Desk
+    url: https://ec.europa.eu/digital-building-blocks/tracker/plugins/servlet/desk/portal/11
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/page/eupl-text-11-12
+servers:
+  - url: http://localhost
+    description: Local Computer Environment
+  - url: https://api-test.ebsi.eu
+    description: EBSI Test Environment
+  - url: https://api-pilot.ebsi.eu
+    description: EBSI Pilot Environment
+  - url: https://api-conformance.ebsi.eu
+    description: EBSI Conformance Environment
+tags:
+  - name: Authorisation Service
+    description: A service responsible for issuing short living access tokens
+paths:
+  /authorisation/v4/.well-known/openid-configuration:
+    get:
+      summary: OpenID Provider Metadata
+      operationId: get-well-known-openid-config
+      tags:
+        - Authorisation Service
+      description: Exposes the configuration of the OpenID Provider.
+      responses:
+        "200":
+          description: OpenID Provider Metadata
+          content:
+            application/json:
+              schema:
+                title: OpenID Configuration
+                description: |
+                  It builds on the following specifications:
+                  - [OIDC - Provider Metadata](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata)
+                  - [OAuth 2.0 Pushed Authorization Requests](https://www.rfc-editor.org/rfc/rfc9126.html)
+                  - [SIOPv2 - Provider Metadata](https://openid.net/specs/openid-connect-self-issued-v2-1_0-12.html#name-self-issued-openid-provider-)
+                  - [OID4VP - Authorisation Server Metadata](https://openid.net/specs/openid-4-verifiable-presentations-1_0-14.html#name-authorization-server-metada)
+                type: object
+                required:
+                  - issuer
+                  - authorization_endpoint
+                  - token_endpoint
+                  - jwks_uri
+                  - scopes_supported
+                  - response_types_supported
+                  - subject_types_supported
+                  - id_token_signing_alg_values_supported
+                properties:
+                  issuer:
+                    title: Issuer
+                    description: |
+                      REQUIRED. URL using the https scheme with no query or fragment component that the OP asserts as its Issuer Identifier. MUST be identical to the iss Claim value in ID Tokens issued from this Issuer.
+
+                      Note: issuer refers to OpenID Connect issuer or the Authorisation Server and not to the Verifiable Credential issuer.
+
+                      Ref: [OIDC](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata)
+                    type: string
+                    format: uri
+                    example: https://api-pilot.ebsi.eu/authorisation/v4
+                  authorization_endpoint:
+                    title: Authorisation Endpoint
+                    description: |
+                      REQUIRED. URL of the OP's OAuth 2.0 Authorisation Endpoint [OpenID.Core].
+
+                      Note: The Authorisation Endpoint is a conceptual entity and does not have a physical manifestation. The Token Endpoint and Presentation Endpoint serve as the primary components responsible for providing user authorisation.
+
+                      Ref: [OIDC](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata)
+                    type: string
+                    format: uri
+                    example: https://api-pilot.ebsi.eu/authorisation/v4/authorize
+                  token_endpoint:
+                    title: Token Endpoint
+                    description: |
+                      CONDITIONAL. URL of the OP's OAuth 2.0 Token Endpoint.
+
+                      Note: This endpoint is REQUIRED unless implicit flow is used.
+
+                      Ref: [OIDC](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata)
+                    type: string
+                    format: uri
+                    example: https://api-pilot.ebsi.eu/authorisation/v4/token
+                  presentation_definition_endpoint:
+                    title: Presentation Definitions Endpoint
+                    description: |
+                      OPTIONAL. URL of the OP's presentation definitions endpoint.
+
+                      Non-standard (yet). Used in EBSI.
+                    type: string
+                    format: uri
+                    example: https://api-pilot.ebsi.eu/authorisation/v4/presentation-definitions
+                  jwks_uri:
+                    title: JWKS URI
+                    description: |
+                      REQUIRED. URL of the Authorisation Server's JWK Set [JWK] document.  The referenced document contains the signing key(s) the client uses to validate signatures from the Authorisation Server. This URL MUST use the \"https\" scheme.  The JWK Set MAY also contain the server's encryption key(s), which are used by clients to encrypt requests to the server.  When both signing and encryption keys are made available, a \"use\" (public key use) parameter value is REQUIRED for all keys in the referenced JWK Set to indicate each key's intended usage.
+
+                      Ref: [OIDC](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata)
+                    type: string
+                    format: uri
+                    example: https://api-pilot.ebsi.eu/authorisation/v4/jwks
+                  scopes_supported:
+                    title: Supported Scopes
+                    description: |
+                      REQUIRED (by SIOP v2). JSON array containing a list of the OAuth 2.0 [RFC6749] scope values that this server supports. The server MUST support the openid scope value. Servers MAY choose not to advertise some supported scope values even when this parameter is used, although those defined in [OpenID.Core] SHOULD be listed, if supported.
+
+                      MUST contain 'openid'
+
+                      Ref:
+                      - [OIDC](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata)
+                      - [SIOPv2](https://openid.net/specs/openid-connect-self-issued-v2-1_0-12.html#name-self-issued-openid-provider-)
+                    type: array
+                    items:
+                      description: A list of openid scope values
+                      type: string
+                    example:
+                      - openid
+                      - didr_invite
+                      - didr_write
+                      - ledger_invoke
+                      - tir_invite
+                      - tir_write
+                      - timestamp_write
+                      - tnt_authorise
+                      - tnt_create
+                      - tnt_write
+                      - tpr_write
+                      - tsr_write
+                  response_types_supported:
+                    title: Supported Response Types
+                    description: |
+                      REQUIRED (by SIOP v2). JSON array containing a list of the OAuth 2.0 \"response_type\" values that this Authorisation Server supports. The array values used are the same as those used with the \"response_types\" parameter defined by \"OAuth 2.0 Dynamic Client Registration Protocol\" [RFC7591].
+
+                      If SIOP v2 is used: MUST be id_token
+
+                      Ref:
+                      - [OIDC](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata)
+                      - [SIOPv2](https://openid.net/specs/openid-connect-self-issued-v2-1_0-12.html#name-self-issued-openid-provider-)
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - token
+                  response_mode_supported:
+                    title: Supported Response Modes
+                    description: |
+                      OPTIONAL. JSON array containing a list of the OAuth 2.0 response_mode values that this OP supports, as specified in OAuth 2.0 Multiple Response Type Encoding Practices [OAuth.Responses]. If omitted, the default for Dynamic OpenID Providers is ["query", "fragment"].
+
+                      MUST be 'query'
+
+                      Ref:
+                      - [OIDC](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata)
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - query
+                      - fragment
+                  grant_types_supported:
+                    title: Supported Grant Types
+                    description: |
+                      JSON array containing a list of the OAuth 2.0 grant type values that this Authorisation Server supports. The array values used are the same as those used with the \"grant_types\" parameter defined by \"OAuth 2.0 Dynamic Client Registration Protocol\" [RFC7591].  If omitted, the default value is \"[\"authorization_code\", \"implicit\"]\".
+
+                      Ref:
+                      - [OIDC](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata)
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - vp_token
+                  subject_types_supported:
+                    title: Supported Subject Types
+                    description: |
+                      REQUIRED. JSON array containing a list of the Subject Identifier types that this OP supports. Valid types include pairwise and public.
+
+                      MUST be ['public']
+
+                      Ref:
+                      - [OIDC](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata)
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - public
+                  id_token_signing_alg_values_supported:
+                    title: ID Token Signing Algorithms
+                    description: |
+                      REQUIRED. JSON array containing a list of the JWS signing algorithms (alg values) supported by the OP for the ID Token to encode the Claims in a JWT [JWT].
+
+                      The algorithm ES256 MUST be included.
+                      Ref:
+                      - [OIDC](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata)
+                      - [SIOPv2](https://openid.net/specs/openid-connect-self-issued-v2-1_0-12.html)
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - ES256
+                  request_object_signing_alg_values_supported:
+                    title: Request Object Signing Algorithms
+                    description: |
+                      OPTIONAL. JSON array containing a list of the JWS signing algorithms (alg values) supported by the OP for Request Objects, which are described in Section 6.1 of OpenID Connect Core 1.0 [OpenID.Core]. These algorithms are used both when the Request Object is passed by value (using the request parameter) and when it is passed by reference (using the request_uri parameter).
+
+                      Servers MUST support none and ES256.
+
+                      Ref:
+                      - [OIDC](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata)
+                      - [SIOPv2](https://openid.net/specs/openid-connect-self-issued-v2-1_0-12.html)
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                        - none
+                        - ES256
+                        - RS256
+                        - ES256K
+                        - EdDSA
+                  request_parameter_supported:
+                    title: Supported Request Parameters
+                    description: |
+                      OPTIONAL. Boolean value specifying whether the OP supports use of the request parameter, with true indicating support. If omitted, the default value is false.
+
+                      EBSI: MUST be true
+
+                      Ref:
+                      - [OIDC](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata)
+                    type: boolean
+                    example: true
+                  token_endpoint_auth_methods_supported:
+                    title: Token Endpoint Auth Methods
+                    description: |
+                      JSON array containing a list of client authentication methods supported by this token endpoint
+
+                      MUST contain 'private_key_jwt'
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                        - private_key_jwt
+                  request_authentication_methods_supported:
+                    title: Request Authentication Methods
+                    description: |
+                      OPTIONAL. A JSON Object defining the client authentications supported for each endpoint. The endpoint names are defined in the IANA "OAuth Authorisation Server Metadata" registry [IANA.OAuth.Parameters]. Other endpoints and authentication methods are possible if made recognizable according to established standards and not in conflict with the operating principles of this specification. In OpenID Connect Core, no client authentication is performed at the authentication endpoint. Instead, because the request itself is authenticated. What it amounts to is that the OP maps information in the request (like the redirect_uri) to information it has gained on the client through static or dynamic registration. If the map is successful, the request can be processed. If the RP uses Automatic Registration, as defined in Section 10.1, the OP has no prior knowledge of the RP. Therefore, the OP must start by gathering information about the RP using the process outlined in Section 6. Once it has the RP's metadata, the OP can verify the request in the same way as if it had known the RP's metadata beforehand. To make the request verification more secure, we demand the use of a client authentication or verification method that proves that the RP is in possession of a key that appears in the RP's metadata.
+
+                      Reference: <https://openid.net/specs/openid-connect-federation-1_0.html#name-op-metadata>
+                    type: object
+                    properties:
+                      authorization_endpoint:
+                        description: |
+                          MUST be present. The value MUST be 'request_object'
+                        type: array
+                        items:
+                          type: string
+                          enum:
+                            - request_object
+                  vp_formats_supported:
+                    title: Supported VP Formats
+                    description: |
+                      REQUIRED. An object containing a list of key value pairs, where the key is a string identifying a credential format supported by the AS. Valid credential format identifiers values are defined in Annex E of [OpenID.VCI]. Other values may be used when defined in the profiles of this specification.
+                    type: object
+                    properties:
+                      jwt_vp:
+                        title: JWT VP
+                        type: object
+                        properties:
+                          alg_values_supported:
+                            description: |
+                              An object where the value is an array of case sensitive strings that identify the cryptographic suites that are supported. Cryptosuites for Verifiable Presentations.
+                              MUST contain ES256
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - ES256
+                      jwt_vp_json:
+                        title: JWT VP
+                        type: object
+                        properties:
+                          alg_values_supported:
+                            description: |
+                              An object where the value is an array of case sensitive strings that identify the cryptographic suites that are supported. Cryptosuites for Verifiable Presentations.
+                              MUST contain ES256
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - ES256
+                      jwt_vc:
+                        title: JWT VC
+                        type: object
+                        properties:
+                          alg_values_supported:
+                            description: |
+                              An object where the value is an array of case sensitive strings that identify the cryptographic suites that are supported. Cryptosuites for Verifiable Credentials in jwt_vc_json, json_vc_json-ld, jwt_vp_json, json_vp_json-ld formats should use algorithm names defined in IANA JOSE Algorithms Registry. Cryptosuites for Verifiable Credentials in ldp_vc and ldp_vp format should use signature suites names defined in Linked Data Cryptographic Suite Registry. Cryptosuites for Verifiable Credentials in mso_mdoc format should use signature suites names defined in ISO/IEC 18013-5:2021. Parties using other credential formats will need to agree upon the meanings of the values used, which may be context-specific.
+
+                              MUST contain ES256
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - ES256
+                      jwt_vc_json:
+                        title: JWT VC
+                        type: object
+                        properties:
+                          alg_values_supported:
+                            description: |
+                              An object where the value is an array of case sensitive strings that identify the cryptographic suites that are supported. Cryptosuites for Verifiable Credentials in jwt_vc_json, json_vc_json-ld, jwt_vp_json, json_vp_json-ld formats should use algorithm names defined in IANA JOSE Algorithms Registry. Cryptosuites for Verifiable Credentials in ldp_vc and ldp_vp format should use signature suites names defined in Linked Data Cryptographic Suite Registry. Cryptosuites for Verifiable Credentials in mso_mdoc format should use signature suites names defined in ISO/IEC 18013-5:2021. Parties using other credential formats will need to agree upon the meanings of the values used, which may be context-specific.
+
+                              MUST contain ES256
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                                - ES256
+                  subject_syntax_types_supported:
+                    title: Supported Subject Syntax Types
+                    description: |
+                      REQUIRED. A JSON array of strings representing URI scheme identifiers and optionally method names of supported Subject Syntax Types defined in {#sub-syntax-type}. When Subject Syntax Type is JWK Thumbprint, valid value is urn:ietf:params:oauth:jwk-thumbprint defined in [RFC9278]. When Subject Syntax Type is Decentralized Identifier, valid values MUST be a did: prefix followed by a supported DID method without a : suffix. For example, support for the DID method with a method-name "example" would be represented by did:example. Support for all DID methods listed in Section 13 of [DID_Specification_Registries] is indicated by sending did without any method-name.
+
+                      Reference: https://openid.net/specs/openid-connect-self-issued-v2-1_0-12.html
+
+                      MUST contain: did:ebsi, did:key
+                    type: array
+                    items:
+                      type: string
+                      format: uri
+                    example:
+                      - "did:ebsi"
+                      - "did:key"
+                  subject_trust_frameworks_supported:
+                    title: Supported Trust Frameworks
+                    description: |
+                      REQUIRED. A JSON array of supported trust frameworks.
+
+                      MUST contain: 'ebsi'
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - ebsi
+                  id_token_types_supported:
+                    title: Supported ID Token types
+                    description: |
+                      OPTIONAL. A JSON array of strings containing the list of ID Token types supported by the OP, the default value is attester_signed_id_token. The ID Token types defined in this specification are:
+                      - `subject_signed_id_token`: Self-Issued ID Token, i.e. the ID Token is signed with key material under the end-user's control.
+                      - `attester_signed_id_token`: the ID Token is issued by the party operating the OP, i.e. this is the classical id token as defined in [OpenID.Core].
+
+                        MUST be subject_signed_id_token
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                        - subject_signed_id_token
+                    example:
+                      - subject_signed_id_token
+              examples:
+                authorisation_v4:
+                  summary: |
+                    Profile: Authorisation Server v4
+                  value:
+                    issuer: https://api-pilot.ebsi.eu/authorisation/v4
+                    authorization_endpoint: https://api-pilot.ebsi.eu/authorisation/v4/authorize
+                    id_token_signing_alg_values_supported:
+                      - ES256
+                    grant_types_supported:
+                      - vp_token
+                    jwks_uri: https://api-pilot.ebsi.eu/authorisation/v4/jwks
+                    presentation_definition_endpoint: https://api-pilot.ebsi.eu/authorisation/v4/presentation_definitions
+                    response_types_supported:
+                      - vp_token
+                    request_parameter_supported: true
+                    request_uri_parameter_supported: false
+                    scopes_supported:
+                      - openid
+                      - didr_invite
+                      - didr_write
+                      - ledger_invoke
+                      - tir_invite
+                      - tir_write
+                      - timestamp_write
+                      - tnt_authorise
+                      - tnt_create
+                      - tnt_write
+                      - tpr_write
+                      - tsr_write
+                    token_endpoint: https://api-pilot.ebsi.eu/authorisation/v4/token
+                    subject_types_supported:
+                      - public
+                    token_endpoint_auth_methods_supported:
+                      - private_key_jwt
+                    request_authentication_methods_supported:
+                      token_endpoint:
+                        - vp_token
+                    vp_formats_supported:
+                      jwt_vp:
+                        alg_values_supported:
+                          - ES256
+                      jwt_vp_json:
+                        alg_values_supported:
+                          - ES256
+                      jwt_vc:
+                        alg_values_supported:
+                          - ES256
+                      jwt_vc_json:
+                        alg_values_supported:
+                          - ES256
+                    subject_syntax_types_supported:
+                      - "did:key"
+                      - "did:ebsi"
+                    subject_trust_frameworks_supported:
+                      - ebsi
+                    id_token_types_supported:
+                      - subject_signed_id_token
+        "500":
+          description: Internal Server Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  value:
+                    title: Internal error
+                    status: 500
+                    detail: Internal error
+  /authorisation/v4/jwks:
+    get:
+      operationId: get-jwks
+      description: Exposes the public keys of the Authorisation Service in JSON Web Key Set (JWKS) format.
+      tags:
+        - Authorisation Service
+      summary: OpenID Provider's public keys
+      responses:
+        "200":
+          description: JSON Web Key Set
+          content:
+            application/jwk-set+json:
+              schema:
+                $ref: "#/components/schemas/jwks"
+              examples:
+                JSON Web Key Set:
+                  summary: JSON Web Key Set
+                  value:
+                    keys:
+                      - kty: EC
+                        crv: P-256
+                        alg: ES256
+                        x: 9Cn5hmFfG-uVuixEk4zCdeF6ZLeeWuvqfGPPWMKDKOw
+                        y: yNnt9p06g8gzoKToQZwzJ-7z6ES-dR2PkyV6oQecaUA
+                        kid: hcpxQ2xL8ncXKB9SoEgW2ImiG_4WR5NXJvQ_PGuHO5k
+        "500":
+          description: Internal Server Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  value:
+                    title: Internal error
+                    status: 500
+                    detail: Internal error
+  /authorisation/v4/presentation-definitions:
+    get:
+      operationId: get-presentation-definitions
+      tags:
+        - Authorisation Service
+      summary: Presentation definition requirements
+      description: Retrieves the presentation definition requirements associated with various OpenID Connect (OIDC) scopes.
+      parameters:
+        - in: query
+          name: scope
+          description: OIDC scope
+          schema:
+            type: string
+            enum:
+              - openid didr_write
+              - openid didr_invite
+              - openid ledger_invoke
+              - openid tir_write
+              - openid tir_invite
+              - openid timestamp_write
+              - openid tnt_authorise
+              - openid tnt_create
+              - openid tnt_write
+              - openid tpr_write
+              - openid tsr_write
+          examples:
+            didr_write:
+              summary: Write to DID Registry
+              value: openid didr_write
+            didr_invite:
+              summary: Register DID into DID Registry
+              value: openid didr_invite
+            ledger_invoke:
+              summary: Invoke Trusted Contract
+              value: openid ledger_invoke
+            tir_write:
+              summary: Write to Trusted Issuers Registry
+              value: openid tir_write
+            tir_invite:
+              summary: Register VC into Trusted Issuers Registry
+              value: openid tir_invite
+            timestamp_write:
+              summary: Write to Timestamp Contract
+              value: openid timestamp_write
+            tnt_authorise:
+              summary: Allow to authorise did:ebsi to create TnT documents.
+              value: openid tnt_authorise
+            tnt_create:
+              summary: Allow to create a new Document.
+              value: openid tnt_create
+            tnt_write:
+              summary: Allow to create events in a Document, grant access or remove documents.
+              value: openid tnt_write
+            tpr_write:
+              summary: Write to Trusted Policies Registry Contract
+              value: openid tpr_write
+            tsr_write:
+              summary: Write to Trusted Schemas Registry Contract
+              value: openid tsr_write
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/presentation_definition_response"
+              examples:
+                didr_invite:
+                  summary: DIDR invite
+                  value:
+                    id: didr_invite_presentation
+                    format:
+                      jwt_vp:
+                        alg:
+                          - ES256
+                          - ES256K
+                      jwt_vp_json:
+                        alg:
+                          - ES256
+                          - ES256K
+                    input_descriptors:
+                      - id: didr_invite_credential
+                        name: Accreditation to write to the DID Registry
+                        purpose: >-
+                          Please present a valid VerifiableAuthorisationToOnboard issued by Root TAO
+                          or TAO
+                        format:
+                          jwt_vc:
+                            alg:
+                              - ES256
+                          jwt_vc_json:
+                            alg:
+                              - ES256
+                        constraints:
+                          fields:
+                            - path:
+                                - $.vc.type
+                              filter:
+                                type: array
+                                items:
+                                  type: string
+                                contains:
+                                  const: VerifiableAuthorisationToOnboard
+                tir_invite:
+                  summary: TIR invite
+                  value:
+                    id: tir_invite_presentation
+                    format:
+                      jwt_vp:
+                        alg:
+                          - ES256
+                      jwt_vp_json:
+                        alg:
+                          - ES256
+                    input_descriptors:
+                      - id: tir_invite_credential
+                        name: Accreditation to write to the Trusted Issuers Registry
+                        purpose: >-
+                          Please present a valid VerifiableAuthorisationForTrustChain from EBSI TO,
+                          or a Verifiable Accreditation (VerifiableAccreditationToAttest,
+                          VerifiableAccreditationToAccredit) issued by Root TAO or TAO.
+                        format:
+                          jwt_vc:
+                            alg:
+                              - ES256
+                          jwt_vc_json:
+                            alg:
+                              - ES256
+                        constraints:
+                          fields:
+                            - path:
+                                - $.vc.type
+                              filter:
+                                type: array
+                                items:
+                                  type: string
+                                contains:
+                                  anyOf:
+                                    - const: VerifiableAuthorisationForTrustChain
+                                    - const: VerifiableAccreditationToAttest
+                                    - const: VerifiableAccreditationToAccredit
+                didr_write:
+                  summary: DIDR write
+                  value:
+                    id: didr_write_presentation
+                    name: Any type of Verifiable Attestation
+                    format:
+                      jwt_vp:
+                        alg:
+                          - ES256
+                          - ES256K
+                      jwt_vp_json:
+                        alg:
+                          - ES256
+                          - ES256K
+                    purpose: >-
+                      Please present a valid Presentation signed by a registered Legal Entity.
+                    input_descriptors: []
+                tir_write:
+                  summary: TIR write
+                  value:
+                    id: tir_write_presentation
+                    name: Any type of Verifiable Attestation
+                    purpose: >-
+                      Please present a valid Presentation signed by a Trusted Issuer.
+                    format:
+                      jwt_vp:
+                        alg:
+                          - ES256
+                      jwt_vp_json:
+                        alg:
+                          - ES256
+                    input_descriptors: []
+                timestamp_write:
+                  summary: Timestamp write
+                  value:
+                    id: timestamp_write_presentation
+                    name: Any type of Verifiable Attestation
+                    purpose: >-
+                      Please present an empty Presentation signed by a registered Legal Entity.
+                    format:
+                      jwt_vp:
+                        alg:
+                          - ES256
+                      jwt_vp_json:
+                        alg:
+                          - ES256
+                    input_descriptors: []
+                tnt_authorise:
+                  summary: TNT authorise
+                  value:
+                    id: tnt_authorise_presentation
+                    format:
+                      jwt_vp:
+                        alg:
+                          - ES256
+                          - ES256K
+                      jwt_vp_json:
+                        alg:
+                          - ES256
+                          - ES256K
+                    input_descriptors:
+                      - id: tnt_authorise_credential
+                        name: Accreditation to create Track and Trace documents
+                        purpose: >-
+                          Please present a valid VerifiableAuthorisationToOnboard issued by an
+                          allowlisted entity
+                        format:
+                          jwt_vc:
+                            alg:
+                              - ES256
+                          jwt_vc_json:
+                            alg:
+                              - ES256
+                        constraints:
+                          fields:
+                            - path:
+                                - $.vc.type
+                              filter:
+                                type: array
+                                items:
+                                  type: string
+                                contains:
+                                  const: VerifiableAuthorisationToOnboard
+                            - path:
+                                - $.vc.issuer
+                              filter:
+                                type: string
+                                enum:
+                                  - did:ebsi:zw422HHPF2McN1b8riU9Y3q
+                tnt_create:
+                  summary: TNT create
+                  value:
+                    id: tnt_create_presentation
+                    name: Any type of Verifiable Attestation
+                    purpose: Please present a valid Presentation signed by an allowlisted TnT Document creator.
+                    format:
+                      jwt_vp:
+                        alg:
+                          - ES256
+                          - ES256K
+                      jwt_vp_json:
+                        alg:
+                          - ES256
+                          - ES256K
+                    input_descriptors: []
+                tnt_write:
+                  summary: TNT write
+                  value:
+                    id: tnt_write_presentation
+                    name: Any type of Verifiable Attestation
+                    purpose: Please present a valid Presentation signed by an account with granted access to write in TnT.
+                    format:
+                      jwt_vp:
+                        alg:
+                          - ES256
+                          - ES256K
+                      jwt_vp_json:
+                        alg:
+                          - ES256
+                          - ES256K
+                    input_descriptors: []
+                tpr_write:
+                  summary: TPR write
+                  value:
+                    id: tpr_write_presentation
+                    name: Any type of Verifiable Attestation
+                    purpose: >-
+                      Please present an empty Presentation signed by a registered Legal Entity.
+                    format:
+                      jwt_vp:
+                        alg:
+                          - ES256
+                      jwt_vp_json:
+                        alg:
+                          - ES256
+                    input_descriptors: []
+                tsr_write:
+                  summary: TSR write
+                  value:
+                    id: tsr_write_presentation
+                    name: Any type of Verifiable Attestation
+                    purpose: >-
+                      Please present an empty Presentation signed by a registered Legal Entity.
+                    format:
+                      jwt_vp:
+                        alg:
+                          - ES256
+                      jwt_vp_json:
+                        alg:
+                          - ES256
+                    input_descriptors: []
+                ledger_invoke:
+                  summary: Invoke Trusted Contract via Ledger API
+                  value:
+                    id: ledger_invoke_presentation
+                    format:
+                      jwt_vp:
+                        alg:
+                          - ES256
+                          - ES256K
+                      jwt_vp_json:
+                        alg:
+                          - ES256
+                          - ES256K
+                    input_descriptors:
+                      - id: ledger_invoke_credential
+                        name: Authorisation to interact with a Trusted Contract
+                        purpose: >-
+                          Please present a valid authorisation to interact with a Trusted Contract
+                        format:
+                          jwt_vc:
+                            alg:
+                              - ES256
+                          jwt_vc_json:
+                            alg:
+                              - ES256
+                        constraints:
+                          fields:
+                            - path:
+                                - $.vc.type
+                              filter:
+                                type: array
+                                items:
+                                  type: string
+                                contains:
+                                  const: VerifiableAuthorisationToInvoke
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Request:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: '["scope must be a combination of ''openid'' and one of the supported scopes (''didr_invite'', ''didr_write'', ''ledger_invoke'', ''tir_invite'', ''tir_write'', ''timestamp_write'', ''tnt_authorise'', ''tnt_create'', ''tnt_write'', ''tpr_write'', ''tsr_write'')"]'
+                    type: "about:blank"
+        "500":
+          description: Internal Server Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  value:
+                    title: Internal error
+                    status: 500
+                    detail: Internal error
+  /authorisation/v4/token:
+    post:
+      operationId: post-token
+      tags:
+        - Authorisation Service
+      summary: Token Endpoint
+      description: Users receive access tokens after they present a valid EBSI Verifiable Credential and prove ownership over their DID.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              required:
+                - grant_type
+                - vp_token
+                - presentation_submission
+                - scope
+              type: object
+              properties:
+                grant_type:
+                  description: MUST be set to "vp_token".
+                  type: string
+                  example: vp_token
+                vp_token:
+                  description: Signed Verifiable Presentation. The VP Token must have a "nonce" and an expiration time of less than 5 minutes.
+                  type: string
+                  example: eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDplYnNpOnp2SFdYMzU5QTNDdmZKbkNZYUFpQWRlI0YwcjVPeXRfbGFodnZ6Nk1XbFlzM21jWU5LWmlpUWRVZnF2OHRzaEhOOXcifQ.eyJpc3MiOiJkaWQ6ZWJzaTowMDAxMjM0NSIsImF1ZCI6ImRpZDplYnNpOnp4QTl0NFoydW9yRVZueDlualdVWXZSIiwibm9uY2UiOiIxMjM0NTY3ODkwIiwiZXhwIjoxNjY4NzU1NzY4LCJpYXQiOjE2Njg3NTQyNjgsInZwIjp7IkBjb250ZXh0IjpbImh0dHBzOi8vd3d3LnczLm9yZy8yMDE4L2NyZWRlbnRpYWxzL3YxIl0sInR5cGUiOlsiVmVyaWZpYWJsZVByZXNlbnRhdGlvbiJdLCJob2xkZXIiOiJkaWQ6ZWJzaTowMDAxMjM0NSIsInZlcmlmaWFibGVDcmVkZW50aWFsIjpbImV5SjBlWEFpT2lKS1YxUWlMQ0poYkdjaU9pSkZVekkxTmlJc0ltdHBaQ0k2SW1ScFpEcGxZbk5wT25wMlNGZFlNelU1UVRORGRtWktia05aWVVGcFFXUmxJMFl3Y2pWUGVYUmZiR0ZvZG5aNk5rMVhiRmx6TTIxaldVNUxXbWxwVVdSVlpuRjJPSFJ6YUVoT09YY2lmUS5lMzAuMFUzZzVrZjJqZDZhN1hNTjBtNXhva091UmhkSlZRZzhFR3UtclQwUVJ2bWJUbm41a0RYbi1tVWhCRWp4SVQxeFkxRmc5YWtRWlBrQmNlR3BuWXZpSFEiXX19.CfwWBrkwOYyrm93A4QEaCCKvG14G0iqr-smrUyrUyC7YBOxhSkYPZgvOy6YCsjFT59Gczd_C0K8Pbni-AH7NRQ
+                presentation_submission:
+                  type: string
+                  description: |
+                    Descriptor for the vp_token, linked by presentation_definition.
+
+                    Non-normative example:
+
+                    ```json
+                    {
+                      "id": "ac9026c2-c3f5-4a26-b609-ec215cf97ba2",
+                      "definition_id": "didr_invite_presentation",
+                      "descriptor_map": [
+                        {
+                          "id": "didr_invite_credential",
+                          "format": "jwt_vp",
+                          "path": "$",
+                          "path_nested": {
+                            "id": "didr_invite_credential",
+                            "format": "jwt_vc",
+                            "path": "$.vp.verifiableCredential[0]"
+                          }
+                        }
+                      ]
+                    }
+                    ```
+                scope:
+                  description: OIDC scope
+                  type: string
+                  enum:
+                    - openid didr_write
+                    - openid didr_invite
+                    - openid ledger_invoke
+                    - openid tir_write
+                    - openid tir_invite
+                    - openid timestamp_write
+                    - openid tnt_authorise
+                    - openid tnt_create
+                    - openid tnt_write
+                    - openid tpr_write
+                    - openid tsr_write
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/access_token_response"
+              examples:
+                Token Response:
+                  summary: Token Response
+                  value:
+                    access_token: jwt
+                    id_token: jwt
+                    token_type: Bearer
+                    scope: openid tir_write
+                    expires_in: 7200
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Request:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: '["grant_type must be equal to vp_token","scope should not be null or undefined","vp_token must be a jwt string","presentation_submission must be a non-empty object)"]'
+                    type: "about:blank"
+        "500":
+          description: Internal Server Error
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  value:
+                    title: Internal error
+                    status: 500
+                    detail: Internal error
+components:
+  schemas:
+    access_token_response:
+      title: Access Token Response
+      type: object
+      required:
+        - access_token
+        - id_token
+        - token_type
+        - scope
+      properties:
+        access_token:
+          description: |
+            The access token issued by the Authorisation Server in JWS format.
+          type: string
+          example: 32164be2809b7e8acdaf
+          format: '^(([A-Za-z0-9\-_])+\.)([A-Za-z0-9\-_]+)(\.([A-Za-z0-9\-_]+)?$'
+        token_type:
+          description: MUST be Bearer
+          type: string
+          enum:
+            - Bearer
+          example: Bearer
+        expires_in:
+          minimum: 1
+          type: integer
+          description: The lifetime in seconds of the access token
+          example: 7200
+        scope:
+          description: The scope of the access token
+          type: string
+          enum:
+            - openid didr_write
+            - openid didr_invite
+            - openid ledger_invoke
+            - openid tir_invite
+            - openid tir_write
+            - openid timestamp_write
+            - openid tnt_authorise
+            - openid tnt_create
+            - openid tnt_write
+            - openid tpr_write
+            - openid tsr_write
+        id_token:
+          description: ID Token value associated with the authenticated session. Presents client's identity. ID Token is issued in a JWS format.
+          example: eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJpYXQiOjE2NDE1NTI2MDAsInN1YiI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCIsImlzcyI6ImRpZDplYnNpOnoyMVNxTUo1M2ZZUzY5VlpSWVRVRURhZyJ9.YIdjUCinbG2DRU0VhFTOPcHK9D0iLcx6zBPmF94phfVOx8IVZwOLMfnEp_9xx87-UNODVCLWNR2UdjUgQyv14A
+          type: string
+          format: '^(([A-Za-z0-9\-_])+\.)([A-Za-z0-9\-_]+)(\.([A-Za-z0-9\-_]+)?$'
+    id_token:
+      title: ID Token
+      type: object
+      properties:
+        nonce:
+          type: string
+          example: d59fcb62-4773-4204-921d-fdb2b8f83dc9
+        sub:
+          type: string
+          example: did:ebsi:zv9SjR4kvy5Pd1VMXg5UecG
+        iss:
+          type: string
+          example: did:ebsi:zv9SjR4kvy5Pd1VMXg5UecG
+        aud:
+          type: string
+          example: https://conformance-test.ebsi.eu/conformance/v4/auth-mock
+        iat:
+          type: integer
+          example: 1681919060
+        exp:
+          type: integer
+          example: 1681919360
+        jti:
+          type: string
+          example: 55ea7b2b-845d-4d0e-a59f-83b52109d0f4
+    jwk:
+      title: JSON Web Key
+      type: object
+      properties:
+        kty:
+          type: string
+          example: EC
+        crv:
+          type: string
+          example: P-256
+        alg:
+          type: string
+          example: ES256
+        x:
+          type: string
+          example: ZYE6uX3XvQ9rLc6s0eeo2YiOM2VfwrEZOZXzTOthcHE
+        "y":
+          type: string
+          example: k-t1bfe-MmmXWQ0QaxK3uJMYlMNkJHYGUSLpxP9RQak
+        kid:
+          type: string
+          example: CG4OE7FEwwh4Nr7ip3l8gq31FZq3jYAJZMru362H9pU
+    jwks:
+      title: JSON Web Key Set
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            $ref: "#/components/schemas/jwk"
+    jwt_object:
+      type: object
+      description: Which JWT Algorithm is supported
+      properties:
+        alg:
+          type: array
+          description: List of names of the the JWT Algorithms
+          minItems: 1
+          items:
+            type: string
+            example: ES256
+      required:
+        - alg
+      additionalProperties: false
+    format:
+      title: Format
+      description: What claim variants Verifiers and Holders support.
+      type: object
+      additionalProperties: false
+      properties:
+        jwt_vc:
+          $ref: "#/components/schemas/jwt_object"
+        jwt_vc_json:
+          $ref: "#/components/schemas/jwt_object"
+        jwt_vp:
+          $ref: "#/components/schemas/jwt_object"
+        jwt_vp_json:
+          $ref: "#/components/schemas/jwt_object"
+    optionality:
+      type: string
+      description: Whether an item is optional or not in the presentation. E.g. if an item is required presentation can not be accepted without it.
+      enum:
+        - required
+        - preferred
+    holder_subject:
+      title: Holder Subject
+      type: object
+      description: The is_holder/same_subject property would be used by a Verifier to require that certain inputs be provided by a certain subject or are about a certain subject.
+      properties:
+        field_id:
+          type: array
+          description: The value of this property MUST be an array of strings, with each string matching the string value from a field object’s id property.
+          items:
+            type: string
+        directive:
+          $ref: "#/components/schemas/optionality"
+      required:
+        - field_id
+        - directive
+      additionalProperties: false
+    directives:
+      type: string
+      description: |
+        A directive is an instruction to the holder about what significance to give to the element it refers to.
+
+        * `required` - The item 'must' be presented
+        * `allowed` - The item 'can' be presented
+        * `disallowed` - The item 'must NOT' be presented
+      enum:
+        - required
+        - allowed
+        - disallowed
+    pd_status:
+      title: Presentation Definition Status
+      description: This is a requirement to show what directive is to be followed for this status.
+      type: object
+      properties:
+        directive:
+          $ref: "#/components/schemas/directives"
+    statuses:
+      title: Statuses
+      description: statuses which are acceptable
+      type: object
+      properties:
+        active:
+          $ref: "#/components/schemas/pd_status"
+        suspended:
+          $ref: "#/components/schemas/pd_status"
+        revoked:
+          $ref: "#/components/schemas/pd_status"
+    one_of_number_string:
+      title: One of number or string
+      oneOf:
+        - type: number
+        - type: string
+      additionalProperties: false
+    filter_v2_base:
+      title: Filter V2
+      type: object
+      description: This is the filter that can be applied on the field's value to know if the available credential with a specific field is acceptable or not.
+      properties:
+        "const":
+          $ref: "#/components/schemas/one_of_number_string"
+        "enum":
+          type: array
+          description: Fixed listed values which are acceptable in this variable.
+          items:
+            $ref: "#/components/schemas/one_of_number_string"
+        exclusiveMinimum:
+          $ref: "#/components/schemas/one_of_number_string"
+        exclusiveMaximum:
+          $ref: "#/components/schemas/one_of_number_string"
+        format:
+          type: string
+          description: format in which the item is expected. e.g. date time format of some sort.
+        formatMaximum:
+          type: string
+          description: When this keyword are added, they also add comparison functions to formats "date", "time" and "date-time"
+        formatMinimum:
+          type: string
+          description: When this keyword are added, they also add comparison functions to formats "date", "time" and "date-time"
+        formatExclusiveMaximum:
+          type: string
+          description: When this keyword are added, they also add comparison functions to formats "date", "time" and "date-time"
+        formatExclusiveMinimum:
+          type: string
+          description: When this keyword are added, they also add comparison functions to formats "date", "time" and "date-time"
+        minLength:
+          type: integer
+          description: acceptable minimum length (e.g. of string) that is acceptable
+        maxLength:
+          type: integer
+          description: acceptable maximum length (e.g. of string) that is acceptable
+        minimum:
+          $ref: "#/components/schemas/one_of_number_string"
+        maximum:
+          $ref: "#/components/schemas/one_of_number_string"
+        not:
+          type: object
+          description: The values which will make the item unacceptable
+          minProperties: 1
+        pattern:
+          type: string
+          description: The regular expression that can help filter the target object.
+        type:
+          type: string
+          description: Object type of the acceptable field.
+        contains:
+          $ref: "#/components/schemas/filter_v2_base"
+        items:
+          anyOf:
+            - $ref: "#/components/schemas/filter_v2"
+            - items:
+                $ref: "#/components/schemas/filter_v2"
+              minItems: 1
+              type: array
+      additionalProperties: false
+    filter_v2:
+      allOf:
+        - $ref: "#/components/schemas/filter_v2_base"
+        - type: object
+          properties:
+            type:
+              type: string
+              description: Object type of the acceptable field.
+          required:
+            - type
+    field_v2:
+      title: Field V2
+      description: Field required by Verifier to be submitted by Holder.
+      type: object
+      properties:
+        # [path, filter and predicate] is one set that can be filled. Or only 'path can be filled.'
+        id:
+          type: string
+          description: Must be a unique identifier between all the fields in the Presentation Definition.
+        path:
+          type: array
+          description: List of JSon paths where the field is expected to be found.
+          items:
+            type: string
+        purpose:
+          type: string
+          description: purpose for which the Claim's data is being requested.
+        filter:
+          $ref: "#/components/schemas/filter_v2"
+        predicate:
+          $ref: "#/components/schemas/optionality"
+        name:
+          type: string
+          description: human-friendly name that describes what the target field represents
+      required:
+        - path
+      additionalProperties: false
+    constraints_v2:
+      title: Constraints V2
+      description: Describes the constraints from Verifier that should be followed by Holder.
+      type: object
+      properties:
+        limit_disclosure:
+          # Allows the Verifier to convey to Holder to see which properties are required and what optional credentials can be omitted if desired by Holder.
+          $ref: "#/components/schemas/optionality"
+        statuses:
+          $ref: "#/components/schemas/statuses"
+        fields:
+          type: array
+          description: It's a list of Fields.
+          items:
+            $ref: "#/components/schemas/field_v2"
+        subject_is_issuer:
+          $ref: "#/components/schemas/optionality"
+        is_holder:
+          type: array
+          description: It's a list of holder_subjects.
+          items:
+            $ref: "#/components/schemas/holder_subject"
+        same_subject:
+          type: array
+          description: It's a list of holder_subjects.
+          items:
+            $ref: "#/components/schemas/holder_subject"
+      additionalProperties: false
+    input_descriptor_v2:
+      title: Input Descriptor V2
+      description: Input Descriptor is used by a Verifier to describe the information required of a Holder before an interaction can proceed.
+      type: object
+      properties:
+        id:
+          type: string
+          description: The verifiable credential that is acceptable from the holder, e.g. wa_driver_license
+        name:
+          type: string
+          description: The verifiable credential that is acceptable from the holder in a human-readable string form, i.e. an alternative for the humans to the ID
+        purpose:
+          type: string
+          description: It describes the purpose for which the Presentation Definition's inputs are being requested.
+        format:
+          $ref: "#/components/schemas/format"
+        group:
+          type: array
+          description: A group from which the specific credential is required.
+          items:
+            type: string
+        constraints:
+          $ref: "#/components/schemas/constraints_v2"
+      required:
+        - id
+        - constraints
+    rules:
+      type: string
+      description: Whether all the requirements are mandatory or holder has multiple options to select verifiable credentials from
+      enum:
+        - all
+        - pick
+    submission_requirement:
+      title: Submission Requirement
+      description: It defines what combinations of inputs a processing entity must submit to comply with the requirements of a Verifier.
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          description: what verifiable credential is demanded in order for the presentation to be sensible.
+        purpose:
+          type: string
+          description: Why this verifiable credentials is requested.
+        rule:
+          $ref: "#/components/schemas/rules"
+        count:
+          type: integer
+          description: How many of the credentials are demanded for the presentation to be sensible.
+          minimum: 1
+        min:
+          type: integer
+          description: Minimum of the credentials are demanded for the presentation to be sensible.
+          minimum: 0
+        max:
+          type: integer
+          description: Maximum of the credentials are demanded for the presentation to be sensible.
+          minimum: 0
+          # It is expected that 'from' or 'from_nested' will be populated
+        from:
+          type: string
+          description: One of the group strings specified for one or more [[ref:Input Descriptor Objects].
+        from_nested:
+          type: array
+          description: nested submission_requirement and is a way to organize the requirements. For example requirements mentioned in the flat list will also be able to provide same information but will be less organized.
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/submission_requirement"
+      required:
+        - rule
+    presentation_definition_response:
+      title: Presentation Definition
+      description: |
+        Presentation Definition schema as defined in [Presentation Exchange 2.1.1 JSON Schema](https://identity.foundation/presentation-exchange/spec/v2.1.1/#json-schema) section
+      type: object
+      properties:
+        id:
+          type: string
+          description: A UUID or some other unique ID to identify this Presentation Definition
+        name:
+          type: string
+          description: A name property is a human-friendly string intended to constitute a distinctive designation of the Presentation Definition.
+        purpose:
+          type: string
+          description: It describes the purpose for which the Presentation Definition's inputs are being requested.
+        format:
+          $ref: "#/components/schemas/format"
+        submission_requirements:
+          type: array
+          description: List of requirements for described inputs in input descriptors.
+          items:
+            $ref: "#/components/schemas/submission_requirement"
+        input_descriptors:
+          type: array
+          description: List of descriptions of the required inputs.
+          items:
+            $ref: "#/components/schemas/input_descriptor_v2"
+        frame:
+          type: object
+          description: a JSON LD Framing Document object.
+      required:
+        - id
+        - input_descriptors
+      additionalProperties: false
+    # Removed "Submission requirement" since its a optional extension we don't use, thus better not include.
+    presentation_submission:
+      title: Presentation Submission
+      type: object
+      properties:
+        presentation_submission:
+          type: object
+          properties:
+            id:
+              type: string
+            definition_id:
+              type: string
+            descriptor_map:
+              type: array
+              items:
+                title: Descriptor
+                type: object
+                properties:
+                  id:
+                    type: string
+                  path:
+                    type: string
+                  path_nested:
+                    $ref: "#/components/schemas/presentation_submission/properties/presentation_submission/properties/descriptor_map/items"
+                  format:
+                    type: string
+                    enum:
+                      - jwt_vc
+                      - jwt_vc_json
+                      - jwt_vp
+                      - jwt_vp_json
+                required:
+                  - id
+                  - path
+                  - format
+                additionalProperties: false
+          required:
+            - id
+            - definition_id
+            - descriptor_map
+          additionalProperties: false
+      required:
+        - presentation_submission
+      additionalProperties: false
+    ProblemDetails:
+      title: Problem Details
+      description: A [Problem Details](https://datatracker.ietf.org/doc/html/rfc7807) object.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the problem type. When dereferenced, it SHOULD provide
+            human-readable documentation for the problem type.
+          default: "about:blank"
+        title:
+          type: string
+          description: A short summary of the problem type.
+          example: Internal Server Error
+        status:
+          type: integer
+          format: int32
+          description: |
+            The HTTP status code generated by the origin server for this occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          example: 500
+        detail:
+          type: string
+          description: |
+            A human readable explanation specific to this occurrence of the problem.
+          example: Connection timeout
+        instance:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the specific occurrence of the problem. It may or may
+            not yield further information if dereferenced.
+    vp_token:
+      title: VP Token
+      description: |
+        OPTIONAL. This object is used to return Verifiable Presentations (VPs) if
+        VPs were requested using VP token request (vp_token property in the claims parameter).
+      type: array
+      items:
+        type: object
+        required:
+          - format
+          - presentation
+        properties:
+          format:
+            description: |
+              REQUIRED. MUST specify format of the returned VP. MUST be jwt_vp
+              if Verifiable Presentation is returned in a JWT (JWS) format or
+              ldp_vp if the Verifiable Presentation is returned in a JSON-LD
+              format with Linked-Data Proof.
+            type: string
+          presentation:
+            description: REQUIRED. Base64 encoded W3C Verifiable Presentation
+            type: array
+            items:
+              type: string
+              format: Base64 encoded Verifiable Presentation
+      example:
+        - format: jwt_vp
+          presentation:
+            - ewogICAgImlzcyI6Imh0dHBzOi8vYm9vay5pdHNvdXJ3ZWIub...IH0
+  responses:
+    "400":
+      description: Bad Request
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            Bad Request:
+              $ref: "#/components/examples/BadRequest"
+            Token Expired:
+              $ref: "#/components/examples/TokenExpired"
+            Issuer Not Found:
+              $ref: "#/components/examples/IssuerNotFound"
+    "500":
+      description: Internal Error
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            Internal Server Error:
+              $ref: "#/components/examples/InternalError"
+  examples:
+    BadRequest:
+      value:
+        title: Bad Request
+        status: 400
+        detail: Bad request.
+    IssuerNotFound:
+      value:
+        title: Issuer Not Found
+        status: 400
+        detail: Issuer not found in the trusted apps registry.
+    TokenExpired:
+      value:
+        title: Token Expired
+        status: 400
+        detail: The token has expired.
+    InternalError:
+      value:
+        title: Internal Server Error
+        status: 500
+        detail: The server encountered an internal error and was unable to process your request.

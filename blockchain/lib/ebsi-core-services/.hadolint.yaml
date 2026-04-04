@@ -1,0 +1,3 @@
+ignored:
+  - DL3018 # don't require exact package versions (because of alpine)
+  - DL3059 # allow multiple consecutive RUN instructions

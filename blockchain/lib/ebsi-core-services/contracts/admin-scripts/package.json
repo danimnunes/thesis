@@ -1,0 +1,128 @@
+{
+  "name": "@ebsiint-sc/admin-scripts",
+  "private": true,
+  "version": "2.0.0-rc.12",
+  "license": "EUPL-1.2",
+  "scripts": {
+    "clean": "rimraf artifacts cache src",
+    "fork": "hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/GVQRQezmyi7tO268bhIl5CSo6lM9ubfp --fork-block-number 11095000",
+    "prettier-format": "prettier . --write",
+    "setup": "exit 0",
+    "prepare-contracts": "scripts/prepare-contracts.sh",
+    "compile": "pnpm run prepare-contracts && hardhat --config hardhat.config.compiler.ts compile",
+    "lint": "pnpm run lint:prettier && pnpm run lint:eslint && pnpm run lint:tsc",
+    "lint:eslint": "eslint .",
+    "lint:tsc": "tsc --noEmit --incremental false",
+    "lint:prettier": "prettier . --check",
+    "box": "scripts/deploy-box.sh",
+    "deploy-box": "pnpm run && pnpm run compile && pnpm run box"
+  },
+  "dependencies": {
+    "@ebsiint-sc/bootstrap-v2": "workspace:*",
+    "@ebsiint-sc/did-registry-v5": "workspace:*",
+    "@ebsiint-sc/proxy": "workspace:*",
+    "@ebsiint-sc/timestamp-v4": "workspace:*",
+    "@ebsiint-sc/trusted-issuers-registry-v5": "workspace:*",
+    "@ebsiint-sc/trusted-policies-registry-v3": "workspace:*",
+    "@ebsiint-sc/trusted-schemas-registry-v3": "workspace:*",
+    "@europeum-ebsi/wallet-lib": "0.0.1",
+    "@openzeppelin/contracts": "5.4.0",
+    "@openzeppelin/contracts-upgradeable": "5.6.1",
+    "elliptic": "6.6.1"
+  },
+  "devDependencies": {
+    "@europeum-ebsi/vcdm1.1-accreditation-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-alliance-id-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-attestation-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-ct-qualification-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-e-origin-customs-clearance-representative-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-e-origin-vat-representation-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-e-origin-verifiable-business-card-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-e-origin-verifiable-importer-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-essp-pda1-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-euipo-certificate-of-trademark-registration-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-europass-edc-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-hr-ds-3-badge-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-idunion-odi-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-idunion-poa-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-multi-uni-pilot-education-verifiable-accreditation-records-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-multi-uni-pilot-my-academic-id-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-multi-uni-pilot-verifiable-attestation-individual-id-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-multi-uni-pilot-verifiable-attestation-organisational-id-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-multi-uni-pilot-verifiable-diploma-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-pm2-credential-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-presentation-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-revocation-statuslist-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-trusted-nodes-list-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-type-extensions-credential-status-status-list-2021-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-type-extensions-terms-of-use-accreditation-policy-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-type-extensions-terms-of-use-issuance-certificate-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-type-extensions-terms-of-use-trust-framework-policy-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-verifiable-education-id-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-vid-legal-entity-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-vid-natural-person-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-vid-verifiable-authorisation-schema": "0.0.0",
+    "@europeum-ebsi/vcdm1.1-w3id-traceability-commercial-invoice-credential-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-attestation-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-delegated-authorisation-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-europass-edc-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-key-attestations-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-lpid-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-multi-uni-pilot-employment-attestation-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-multi-uni-pilot-work-certificate-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-pm2-credential-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-presentation-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-timestamp-token-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-trust-model-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-type-extensions-evidence-authorisation-delegation-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-type-extensions-terms-of-use-attestation-policy-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-verifiable-education-id-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-vid-legal-entity-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-vid-natural-person-schema": "0.0.0",
+    "@europeum-ebsi/vcdm2.0-w3id-traceability-commercial-invoice-credential-schema": "0.0.0",
+    "@gnosis-guild/typechain-ethers-v6": "0.5.5",
+    "@gnosis-guild/typechain-hardhat": "9.2.2",
+    "@nomicfoundation/hardhat-ethers": "3.1.0",
+    "@nomicfoundation/hardhat-verify": "2.0.14",
+    "@nomiclabs/hardhat-solhint": "4.1.2",
+    "@openzeppelin/hardhat-upgrades": "3.9.1",
+    "@openzeppelin/upgrades-core": "1.44.2",
+    "@types/elliptic": "6.4.18",
+    "@types/node": "24.12.0",
+    "canonicalize": "2.1.0",
+    "dotenv": "17.3.1",
+    "ethers": "6.16.0",
+    "hardhat": "2.26.1",
+    "hardhat-abi-exporter": "2.11.0",
+    "hardhat-deploy": "0.14.0",
+    "hardhat-deploy-ethers": "0.4.2",
+    "jose": "5.10.0",
+    "typechain": "8.3.2"
+  },
+  "nx": {
+    "targets": {
+      "prepare-contracts": {
+        "inputs": [
+          "^production"
+        ],
+        "outputs": [
+          "{projectRoot}/contracts"
+        ]
+      },
+      "compile": {
+        "outputs": [
+          "{projectRoot}/src"
+        ],
+        "dependsOn": [
+          "prepare-contracts"
+        ]
+      },
+      "lint": {
+        "dependsOn": [
+          "^compile",
+          "compile"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,858 @@
+openapi: 3.1.0
+info:
+  title: Trusted Schemas Registry API v3
+  version: 3.0.0
+  description: |
+    The Trusted Schemas Registry (TSR) API is a core EBSI service that enables interaction with the Trusted Schemas Registry Smart Contract
+    to:
+    - register a new schema
+    - update a registered schema
+    - read and validate registered schemas
+
+    The EBSI TSR is a domain-specific registry service focused on registering only data models and ontologies. The registry is agnostic to any type of schema, supporting whatever scheme the consumer needs to anchor, whether it be JSON, JSON-LD, XML, or other formats.
+
+    The TSR API is a microservice hosted on the EBSI infrastructure.
+  contact:
+    name: EBSI Support - Service Desk
+    url: https://ec.europa.eu/digital-building-blocks/tracker/plugins/servlet/desk/portal/11
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/page/eupl-text-11-12
+paths:
+  /trusted-schemas-registry/v3/schemas:
+    get:
+      operationId: get-schemas
+      summary: List schemas
+      description: Returns a list of schemas.
+      tags:
+        - Schemas
+      parameters:
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: Absolute path to the collection.
+                  items:
+                    type: array
+                    description: List of schemas
+                    items:
+                      title: Schema links
+                      description: Links to schemas as returned by the REST APIs.
+                      type: object
+                      properties:
+                        schemaId:
+                          type: string
+                          description: Unique schema ID, encoded in multibase base58btc.
+                        href:
+                          type: string
+                          description: Link to the resource.
+                  total:
+                    type: integer
+                    description: Total number of items across all pages.
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page.
+                  links:
+                    $ref: "#/components/schemas/Links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas?page[after]=1&page[size]=10
+                    items:
+                      - schemaId: "z3kRpVjUFj4Bq8qHRENUHiZrVF5VgMBUe7biEafp1wf2J"
+                        href: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/z3kRpVjUFj4Bq8qHRENUHiZrVF5VgMBUe7biEafp1wf2J
+                      - schemaId: "zkVjiLUWHoDtRie9iRAV1oDfjY7onVTEdzzqdXajvBa"
+                        href: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zkVjiLUWHoDtRie9iRAV1oDfjY7onVTEdzzqdXajvBa
+                      - schemaId: "zArZLLNBiR4puGn7xbvnbuwTTUMpwuLTD2rSEHYmFc"
+                        href: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zArZLLNBiR4puGn7xbvnbuwTTUMpwuLTD2rSEHYmFc
+                      - schemaId: zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD
+                        href: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD
+                    total: 4
+                    pageSize: 10
+                    links:
+                      first: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas?page[after]=1&page[size]=10
+                      prev: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas?page[after]=1&page[size]=10
+                      next: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas?page[after]=1&page[size]=10
+                      last: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas?page[after]=1&page[size]=10
+        "400":
+          description: Bad Request Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: PageSize should not be greater than 50
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-schemas-registry/v3/schemas/{schemaId}:
+    get:
+      operationId: get-schema
+      summary: Get a schema
+      description: Returns a trusted schema identified by its ID.
+      tags:
+        - Schemas
+      parameters:
+        - name: schemaId
+          in: path
+          schema:
+            type: string
+          examples:
+            schemaId:
+              description: Valid Pilot schemaId
+              value: zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                Success:
+                  value:
+                    "@context": https://ebsi.eu
+                    type: Schema
+                    name: example
+                    data: 53a8da4c21d411b462bcfd9498cdc842
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {schemaId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {schemaId} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Schema Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-schemas-registry/v3/schemas/{schemaId}/revisions:
+    get:
+      operationId: get-schema-revisions
+      summary: List a schema's revisions
+      description: Returns a list of revisions of a specific schema.
+      tags:
+        - Schemas
+      parameters:
+        - in: path
+          name: schemaId
+          schema:
+            type: string
+          examples:
+            schemaId:
+              description: Valid Pilot schemaId
+              value: zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD
+          required: true
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+        - in: query
+          name: valid-at
+          schema:
+            type: string
+          description: ISO-8601 date. Only revisions valid at this date will be returned. Requires "version" to be "deprecated".
+        - in: query
+          name: version
+          description: |
+            Version of the endpoint to use. Defaults to the latest version.
+          required: false
+          schema:
+            type: string
+            enum:
+              - deprecated
+              - latest
+          example: "deprecated"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: Absolute path to the collection.
+                  items:
+                    type: array
+                    description: List of schemas
+                    items:
+                      title: Schema revisions links
+                      description: Links to schema revisions as returned by the REST APIs.
+                      type: object
+                      properties:
+                        schemaRevisionId:
+                          type: string
+                          description: Schema revision id - SHA2-256 hash of the schema revision (hexadecimal)
+                        href:
+                          type: string
+                          description: Link to the resource.
+                  total:
+                    type: integer
+                    description: Total number of items across all pages.
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page.
+                  links:
+                    $ref: "#/components/schemas/Links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD/revisions?page[after]=1&page[size]=10
+                    items:
+                      - schemaRevisionId: "0xeb23ad59866910271641e0c685d191b0ef324b389c3e7c0ca10f870aacfa4ccd"
+                        href: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD/revisions/0xeb23ad59866910271641e0c685d191b0ef324b389c3e7c0ca10f870aacfa4ccd
+                    total: 1
+                    pageSize: 10
+                    links:
+                      first: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD/revisions?page[after]=1&page[size]=10
+                      prev: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD/revisions?page[after]=1&page[size]=10
+                      next: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD/revisions?page[after]=1&page[size]=10
+                      last: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD/revisions?page[after]=1&page[size]=10
+        "400":
+          description: Bad Request Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: PageSize should not be greater than 50
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-schemas-registry/v3/schemas/{schemaId}/revisions/{schemaRevisionId}:
+    get:
+      operationId: get-schema-revision
+      summary: Get a schema revision
+      description: Returns a trusted schema revision identified by its ID.
+      tags:
+        - Schemas
+      parameters:
+        - name: schemaId
+          in: path
+          schema:
+            type: string
+          examples:
+            schemaId:
+              description: Valid Pilot schemaId
+              value: zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD
+          required: true
+        - name: schemaRevisionId
+          in: path
+          schema:
+            type: string
+          examples:
+            schemaRevisionId:
+              description: Valid Pilot schemaRevisionId
+              value: "0x76a2bbfaf876171785a02eaef767f8a2b3d1d67fa995edc03a27a83a73b2ae16"
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                Success:
+                  value:
+                    "@context": https://ebsi.eu
+                    type: Schema
+                    name: example
+                    data: 53a8da4c21d411b462bcfd9498cdc842
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {schemaId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {schemaId} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Schema Not Found:
+                  $ref: "#/components/examples/NotFound"
+                Revision Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-schemas-registry/v3/schemas/{schemaId}/revisions/{schemaRevisionId}/metadata:
+    get:
+      operationId: get-schema-revision-metadata-list
+      summary: List revision's metadata
+      description: Returns a list of schemas revision's metadata.
+      tags:
+        - Schemas
+      parameters:
+        - in: path
+          name: schemaId
+          schema:
+            type: string
+          examples:
+            schemaId:
+              description: Valid Pilot schemaId
+              value: zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD
+          required: true
+        - name: schemaRevisionId
+          in: path
+          schema:
+            type: string
+          examples:
+            schemaRevisionId:
+              description: Valid Pilot schemaRevisionId
+              value: "0x76a2bbfaf876171785a02eaef767f8a2b3d1d67fa995edc03a27a83a73b2ae16"
+          required: true
+        - in: query
+          name: page[after]
+          schema:
+            type: string
+          description: Cursor that points to the end of the page of data that has been returned.
+        - schema:
+            type: integer
+          in: query
+          name: page[size]
+          description: Defines the maximum number of objects that may be returned.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  self:
+                    type: string
+                    description: Absolute path to the collection.
+                  items:
+                    type: array
+                    description: List of schemas
+                    items:
+                      title: Schema revisions metadata links
+                      description: Links to schema revisions metadata as returned by the REST APIs.
+                      type: object
+                      properties:
+                        metadataId:
+                          type: string
+                          description: Schema revision metadata id - SHA2-256 hash of the schema revision metadata (hexadecimal)
+                        href:
+                          type: string
+                          description: Link to the resource.
+                  total:
+                    type: integer
+                    description: Total number of items across all pages.
+                  pageSize:
+                    type: integer
+                    description: Number of items to be returned per page.
+                  links:
+                    $ref: "#/components/schemas/Links"
+              examples:
+                Success:
+                  value:
+                    self: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD/revisions/0xeb23ad59866910271641e0c685d191b0ef324b389c3e7c0ca10f870aacfa4ccd/metadata?page[after]=1&page[size]=10
+                    items:
+                      - metadataId: "0xb9085bf38ccf24a264f73f6ba42204fda51185d89afc8104ab9155c4b002e1eb"
+                        href: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD/revisions/0xeb23ad59866910271641e0c685d191b0ef324b389c3e7c0ca10f870aacfa4ccd/metadata/0xb9085bf38ccf24a264f73f6ba42204fda51185d89afc8104ab9155c4b002e1eb
+                    total: 1
+                    pageSize: 10
+                    links:
+                      first: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD/revisions/0xeb23ad59866910271641e0c685d191b0ef324b389c3e7c0ca10f870aacfa4ccd/metadata?page[after]=1&page[size]=10
+                      prev: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD/revisions/0xeb23ad59866910271641e0c685d191b0ef324b389c3e7c0ca10f870aacfa4ccd/metadata?page[after]=1&page[size]=10
+                      next: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD/revisions/0xeb23ad59866910271641e0c685d191b0ef324b389c3e7c0ca10f870aacfa4ccd/metadata?page[after]=1&page[size]=10
+                      last: https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD/revisions/0xeb23ad59866910271641e0c685d191b0ef324b389c3e7c0ca10f870aacfa4ccd/metadata?page[after]=1&page[size]=10
+        "400":
+          description: Bad Request Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Paging Request:
+                  value:
+                    title: Bad Paging Request
+                    status: 400
+                    detail: PageSize should not be greater than 50
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Schema Not Found:
+                  $ref: "#/components/examples/NotFound"
+                Revision Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-schemas-registry/v3/schemas/{schemaId}/revisions/{schemaRevisionId}/metadata/{metadataId}:
+    get:
+      operationId: get-schema-revision-metadata
+      summary: Get metadata
+      description: Returns a trusted schema revision metadata identified by its ID.
+      tags:
+        - Schemas
+      parameters:
+        - name: schemaId
+          in: path
+          schema:
+            type: string
+          examples:
+            schemaId:
+              description: Valid Pilot schemaId
+              value: zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD
+          required: true
+        - name: schemaRevisionId
+          in: path
+          schema:
+            type: string
+          examples:
+            schemaRevisionId:
+              description: Valid Pilot schemaRevisionId
+              value: "0x76a2bbfaf876171785a02eaef767f8a2b3d1d67fa995edc03a27a83a73b2ae16"
+          required: true
+        - name: metadataId
+          in: path
+          schema:
+            type: string
+          examples:
+            metadataId:
+              description: Valid Pilot metadataId
+              value: "0x44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/ld+json:
+              schema:
+                type: object
+              examples:
+                Success:
+                  value:
+                    meta: value
+                    data: 2d0859c9d9c2cc06987333c9fe238abe
+                    validFrom: "2021-06-10T07:51:36.334Z"
+                    validTo: "2021-06-10T07:57:36.334Z"
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Invalid {schemaId} Parameter:
+                  value:
+                    title: Bad Request
+                    status: 400
+                    detail: The format of {schemaId} parameter is not valid
+        "404":
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Schema Not Found:
+                  $ref: "#/components/examples/NotFound"
+                Revision Not Found:
+                  $ref: "#/components/examples/NotFound"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Internal Server Error:
+                  $ref: "#/components/examples/InternalError"
+  /trusted-schemas-registry/v3/abi:
+    get:
+      operationId: get-abi
+      summary: Get ABI
+      description: Returns the ABI of TSR SC v3.
+      tags:
+        - ABI
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                description: The ABI of TSR SC v3.
+  /trusted-schemas-registry/v3/jsonrpc:
+    post:
+      operationId: post-jsonrpc
+      summary: JSON-RPC API
+      description: |
+        The JSON-RPC API provides methods assisting the construction of blockchain transactions and
+        interaction with the ledger.
+      tags:
+        - JSON-RPC
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        description: |
+          The body follows the
+          [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification).
+
+          It requires the following fields:
+
+          - **jsonrpc**: must be exactly "2.0"
+          - **method**: method to be invoked
+          - **params**: method parameters
+          - **id**: identifier established by the client
+
+          ### API Methods
+
+          #### insertSchema
+
+          Requires an access token with `tsr_write` scope and having the required
+          attributes assigned in Trusted Policies Registry.
+
+          Call to build an unsigned transaction to insert a new schema.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **schemaId**: schema ID converted into hex string
+          - **schema**: Content. This field must be a JSON stringified and converted into hex string
+          - **metadata**: Metadata of the first version. This field must be a JSON stringified and converted into hex string
+
+          #### updateSchema
+
+          Requires an access token with `tsr_write` scope and having the required
+          attributes assigned in Trusted Policies Registry.
+
+          Call to build an unsigned transaction to update an schema.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **schemaId**: Schema ID
+          - **schema**: Content. This field must be a JSON stringified and converted into hex string
+          - **metadata**: Metadata. This field must be a JSON stringified and converted into hex string
+
+          #### updateMetadata
+
+          Requires an access token with `tsr_write` scope and having the required
+          attributes assigned in Trusted Policies Registry.
+
+          Call to build an unsigned transaction to update the metadata of a schema revision.
+
+          Parameters:
+          - **from**: Ethereum address of the signer
+          - **schemaId**: Schema ID
+          - **schemaRevisionId**: Schema revision ID
+          - **metadata**: Metadata. This field must be a JSON stringified and converted into hex string
+
+          #### sendSignedTransaction
+
+          Requires an access token with `tsr_write` scope.
+
+          Sends a signed transaction to the blockchain and returns the hash of the transaction.
+
+          **Warning: the transaction is not immediately processed. Make sure to check that the transaction has been successfully included in a block before moving on.**
+
+          You can get the [receipt of the transaction](https://besu.hyperledger.org/public-networks/reference/api/objects#transaction-receipt-object) by calling the [`eth_getTransactionReceipt`](https://besu.hyperledger.org/public-networks/reference/api#eth_gettransactionreceipt) method of [Ledger API's Besu endpoint](/apis/pilot/ledger/v4/post-blockchains-besu).
+
+          Receipts for pending transactions are not available, therefore you will have to wait until the transaction has been processed — usually a few seconds. We recommend you to poll the `eth_getTransactionReceipt` method until the receipt is available.
+
+          Once the receipt is available, you can check the `status` field to know if the transaction succeeded (`0x1`) or failed (`0x0`). If the transaction failed, the `revertReason` field will give you insights about the reason for the failure. You can learn more about the format of the revert reason in [Besu's documentation](https://besu.hyperledger.org/private-networks/how-to/send-transactions/revert-reason#revert-reason-format).
+        content:
+          application/json:
+            schema:
+              required:
+                - jsonrpc
+                - id
+                - method
+                - params
+              type: object
+              properties:
+                jsonrpc:
+                  description: Must be exactly "2.0"
+                  type: string
+                method:
+                  description: Method that needs to be invoked
+                  type: string
+                params:
+                  description: Array of parameters
+                  type: array
+                  items:
+                    type: object
+                id:
+                  description: Identifier established by the client
+                  type: integer
+                  example: 1
+            examples:
+              Build tx to insertSchema:
+                value:
+                  jsonrpc: "2.0"
+                  method: insertSchema
+                  id: 1
+                  params:
+                    - from: "0x6bd81E8CaA368CC196d573a26F1BE6c0753aC6e6"
+                      schemaId: "0x312e332e362e312e342e312e3339312e31302e3132302e322e332e312e3734"
+                      schema: "0x7b2240636f6e74657874223a2268747470733a2f2f656273692e6575222c2274797065223a22536368656d61222c226e616d65223a226578616d706c65222c2264617461223a223065346637383664343036613330643339343438633563613232343562316130227d"
+                      metadata: "0x7b226d657461223a2276616c7565222c2264617461223a223536323930303863363738383536346164653165353266383635623864366535222c2276616c696446726f6d223a22323032312d30382d30325430393a31323a30342e3230365a222c2276616c6964546f223a22323032312d30382d30325430393a31383a30342e3230365a227d"
+              Build tx to updateSchema:
+                value:
+                  jsonrpc: "2.0"
+                  method: updateSchema
+                  id: 1
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      schemaId: "0x312e332e362e312e342e312e3339312e31302e3132302e322e332e312e3734"
+                      schema: "0x227b2240636f6e74657874223a2268747470733a2f2f656273692e6575222c2274797065223a22536368656d61222c226e616d65223a226578616d706c65227d22"
+                      metadata: "0x227b226d657461223a2276616c7565227d22"
+              Build tx to updateMetadata:
+                value:
+                  jsonrpc: "2.0"
+                  method: updateMetadata
+                  id: 1
+                  params:
+                    - from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      schemaId: "0x312e332e362e312e342e312e3339312e31302e3132302e322e332e312e3734"
+                      schemaRevisionId: "0x3f571838c18b0e83db06d167211279b437e0becc999309be2de54ccc7b8d0909"
+                      metadata: "0x227b226d657461223a2276616c7565227d22"
+              Send Transaction:
+                description: Sends a signed transaction to the blockchain.
+                value:
+                  jsonrpc: "2.0"
+                  method: sendSignedTransaction
+                  id: 1
+                  params:
+                    - protocol: eth
+                      unsignedTransaction:
+                        from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                        to: "0xFde86148db58f57787C06BeAf63a9c3f789357b3"
+                        data: "0x0000..."
+                        nonce: "0x00"
+                        chainId: "0x1b3b"
+                        gasLimit: "0x10000"
+                        gasPrice: "0x00"
+                        value: "0x00"
+                      r: "0x..."
+                      s: "0x..."
+                      v: "0x..."
+                      signedRawTransaction: "--- signed raw transaction ---"
+      responses:
+        "200":
+          description: Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonRpcResponse"
+              examples:
+                Build tx:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    result:
+                      from: "0x416e6e6162656c2e4c65652e452d412d506f652e"
+                      to: "0xFde86148db58f57787C06BeAf63a9c3f789357b3"
+                      data: "0x0000..."
+                      nonce: "0x00"
+                      chainId: "0x1b3b"
+                      gasLimit: "0x10000"
+                      gasPrice: "0x00"
+                      value: "0x00"
+                Send Transaction:
+                  value:
+                    jsonrpc: "2.0"
+                    id: 1
+                    result: "0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              examples:
+                Bad Request:
+                  $ref: "#/components/examples/BadRequest"
+components:
+  schemas:
+    ProblemDetails:
+      title: Problem Details
+      description: A [Problem Details](https://datatracker.ietf.org/doc/html/rfc7807) object.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the problem type. When dereferenced,
+            it SHOULD provide human-readable documentation for the problem type.
+          default: about:blank
+        title:
+          type: string
+          description: |
+            A short summary of the problem type.
+          example: Internal Server Error
+        status:
+          type: integer
+          format: int32
+          description: |
+            The HTTP status code generated by the origin server for this occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          example: 500
+        detail:
+          type: string
+          description: |
+            A human readable explanation specific to this occurrence of the problem.
+          example: Connection timeout
+        instance:
+          type: string
+          format: uri
+          description: |
+            An absolute URI that identifies the specific occurrence of the problem.
+            It may or may not yield further information if dereferenced.
+    JsonRpcResponse:
+      title: JSON-RPC Response
+      type: object
+      properties:
+        jsonrpc:
+          description: Must be exactly "2.0"
+          type: string
+        id:
+          description: Same identifier established by the client in the call
+          type: integer
+        result:
+          description: Result of the call
+          oneOf:
+            - type: object
+            - type: string
+    Links:
+      title: Links
+      type: object
+      description: Links model used for pagination.
+      properties:
+        first:
+          type: string
+          description: Hyperlink to the first page.
+        prev:
+          type: string
+          description: Hyperlink to the previous page.
+        next:
+          type: string
+          description: Hyperlink to the next page.
+        last:
+          type: string
+          description: Hyperlink to the last page.
+  examples:
+    BadRequest:
+      value:
+        title: Bad Request
+        status: 400
+        detail: Bad request
+    NotFound:
+      value:
+        title: Not found
+        status: 404
+        detail: Not found
+    InternalError:
+      value:
+        title: Internal error
+        status: 500
+        detail: Internal error
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+  - url: http://localhost
+    description: Local Computer Environment
+  - url: https://api-test.ebsi.eu
+    description: EBSI Test Environment
+  - url: https://api-pilot.ebsi.eu
+    description: EBSI Pilot Environment
+  - url: https://api-conformance.ebsi.eu
+    description: EBSI Conformance Environment

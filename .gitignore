@@ -1,0 +1,15 @@
+# Python environment
+venv/
+__pycache__/
+.pytest_cache/
+
+# Blockchain build artifacts
+blockchain/out/
+blockchain/cache/
+blockchain/foundry.lock
+
+# Data (Synthea data is often massive, better to keep it local)
+synthea_data/
+
+# Misc
+.DS_Store

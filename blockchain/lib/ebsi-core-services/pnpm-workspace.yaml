@@ -1,0 +1,79 @@
+packages:
+  - apis/*
+  - contracts/*
+  - subgraphs/*
+
+allowBuilds:
+  "@nestjs/core@11.1.17": true
+  "@sphereon/pex@4.1.0": true
+  "@swc/core@1.15.21": true
+  esbuild@0.27.4: true
+  keccak@3.0.4: true
+  msw@2.12.14: true
+  nx@20.8.4: true
+  secp256k1@4.0.4: true
+  unrs-resolver@1.11.1: true
+
+dedupePeers: true
+
+# Required for pnpm deploy
+injectWorkspacePackages: true
+
+# Don't install dependencies if they're less than 1d old
+minimumReleaseAge: 1440
+
+minimumReleaseAgeExclude:
+  - "@europeum-ebsi/*"
+
+overrides:
+  "@angular-devkit/core@19.2.19>ajv@8.17.1": 8.18.0
+  "@angular-devkit/core@19.2.19>picomatch@4.0.2": 4.0.4
+  "@graphprotocol/graph-cli@0.98.1>@oclif/core@4.5.5": 4.8.1
+  "@graphprotocol/graph-cli@0.98.1>glob@11.0.3": 11.1.0
+  "@graphprotocol/graph-cli@0.98.1>gluegun@5.2.0": 5.2.2
+  "@graphprotocol/graph-cli@0.98.1>graphql@16.11.0": 16.13.2
+  "@graphprotocol/graph-cli@0.98.1>immutable@5.1.4": "5.1.5"
+  "@graphprotocol/graph-cli@0.98.1>js-yaml@4.1.0": 4.1.1
+  "@graphprotocol/graph-cli@0.98.1>prettier@3.6.2": 3.8.1
+  "@graphprotocol/graph-cli@0.98.1>semver@7.7.3": 7.7.4
+  "@graphprotocol/graph-cli@0.98.1>undici@7.16.0": 7.24.0
+  "@graphprotocol/graph-cli@0.98.1>yaml@2.8.1": 2.8.3
+  "@graphprotocol/graph-ts@0.38.2>assemblyscript@0.27.31": 0.19.23
+  "@nestjs/common@11.1.16>file-type@21.3.0": 21.3.1
+  "@nestjs/core@11.1.17>path-to-regexp@8.3.0": 8.4.0
+  "@nestjs/platform-fastify@11.1.17>fastify@5.8.2": 5.8.4
+  "@nestjs/platform-fastify@11.1.17>path-to-regexp@8.3.0": 8.4.0
+  "@nestjs/schematics@11.0.9>@angular-devkit/core@19.2.17": 19.2.19
+  "@nestjs/schematics@11.0.9>@angular-devkit/schematics@19.2.17": 19.2.19
+  "@nx/devkit@20.8.4>minimatch@9.0.3": "9.0.9"
+  "@nx/workspace@20.8.4>picomatch@4.0.2": 4.0.4
+  "@scaleway/changesets-renovate@2.2.4>simple-git@3.30.0": 3.32.3
+  "@stoplight/spectral-core@1.21.0>minimatch@3.1.2": 3.1.5
+  "@stoplight/spectral-ruleset-bundler@1.6.3>rollup@2.79.2": 2.80.0
+  "@types/glob@7.2.0>@types/minimatch@*": 5.1.2
+  apisauce@2.1.6>axios@0.21.4: 0.30.3
+  ethjs-unit@0.1.6>bn.js@4.11.6: 4.12.3
+  gluegun@5.2.2>semver@7.7.0: 7.7.4
+  hardhat-deploy@0.14.0>axios@0.21.4: 0.30.3
+  number-to-bn@1.7.0>bn.js@4.11.6: 4.12.3
+  nx@20.8.4>minimatch@9.0.3: 9.0.9
+  solc@0.8.26>tmp@0.0.33: 0.2.5
+
+patchedDependencies:
+  "@graphprotocol/graph-cli@0.98.1": patches/@graphprotocol__graph-cli@0.98.1.patch
+  nx@20.8.4: patches/nx@20.8.4.patch
+
+strictDepBuilds: true
+
+trustPolicy: no-downgrade
+
+trustPolicyExclude:
+  - axios@0.30.3
+  - semver@5.7.2 || 6.3.1
+  - rollup@2.80.0
+  - chokidar@4.0.3
+  - undici@5.29.0
+  - undici-types@6.19.8
+  - "@openzeppelin/defender-sdk-base-client@2.7.1"
+  - "@openzeppelin/defender-sdk-deploy-client@2.7.1"
+  - "@openzeppelin/defender-sdk-network-client@2.7.1"

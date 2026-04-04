@@ -1,0 +1,103 @@
+{
+  "extends": "nx/presets/npm.json",
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*"],
+    "test": [
+      "{projectRoot}/src/**/*",
+      "{projectRoot}/tests/**/*",
+      "{projectRoot}/hardhat.config.cjs",
+      "{projectRoot}/vitest.config.ts",
+      "{projectRoot}/tsconfig.json",
+      "{projectRoot}/.env*",
+      "{projectRoot}/schema.graphql",
+      "{projectRoot}/subgraph.template.yaml"
+    ],
+    "production": [
+      "{projectRoot}/src/**/*",
+      "{projectRoot}/contracts/**/*",
+      "{projectRoot}/scripts/**/*",
+      "!{projectRoot}/**/*.spec.ts",
+      "!{projectRoot}/.solhint*",
+      "{projectRoot}/hardhat.config.ts",
+      "{projectRoot}/nest-cli.json",
+      "{projectRoot}/package.json",
+      "{projectRoot}/schema.graphql",
+      "{projectRoot}/subgraph.template.yaml",
+      "{projectRoot}/tsconfig.production.json",
+      "{projectRoot}/tsconfig.json"
+    ]
+  },
+  "targetDefaults": {
+    "build": {
+      "inputs": ["production", "^production"],
+      "outputs": ["{projectRoot}/dist", "{projectRoot}/generated"],
+      "dependsOn": ["^build", "setup"],
+      "cache": true
+    },
+    "lint": {
+      "inputs": ["default", "^production", "!{projectRoot}/.env*"],
+      "outputs": [],
+      "dependsOn": ["^build", "setup"],
+      "cache": true
+    },
+    "setup": {
+      "inputs": ["production", "^production"],
+      "dependsOn": ["^build", "clean"],
+      "cache": true
+    },
+    "start": {
+      "inputs": ["production", "^production"],
+      "outputs": [],
+      "dependsOn": ["^build", "setup"]
+    },
+    "start:dev": {
+      "inputs": ["production", "^production"],
+      "outputs": [],
+      "dependsOn": ["^build", "setup"]
+    },
+    "start:prod": {
+      "inputs": ["production", "^production"],
+      "outputs": [],
+      "dependsOn": ["^build", "build"]
+    },
+    "test": {
+      "inputs": ["test", "^production"],
+      "outputs": [],
+      "dependsOn": ["^build", "setup"],
+      "cache": true
+    },
+    "test:unit": {
+      "inputs": ["test", "^production"],
+      "outputs": [],
+      "dependsOn": ["^build", "setup"],
+      "cache": true
+    },
+    "test:ci": {
+      "inputs": ["test", "^production"],
+      "outputs": [],
+      "dependsOn": ["^build", "setup"],
+      "cache": true
+    },
+    "test:e2e": {
+      "inputs": ["test", "^production"],
+      "outputs": [],
+      "dependsOn": ["^build", "setup"]
+    },
+    "compile": {
+      "outputs": [
+        "{projectRoot}/artifacts",
+        "{projectRoot}/dist",
+        "{projectRoot}/src"
+      ],
+      "dependsOn": ["setup"],
+      "cache": true
+    },
+    "prepare-contracts": {
+      "cache": true
+    }
+  },
+  "useInferencePlugins": false,
+  "defaultBase": "origin/main",
+  "useLegacyCache": true
+}

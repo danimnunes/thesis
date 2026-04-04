@@ -1,0 +1,6 @@
+{
+  "extends": ["spectral:oas"],
+  "rules": {
+    "operation-tag-defined": "off"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "@ebsiint-api/trusted-issuers-registry-api-v4",
+  "private": true,
+  "version": "4.0.0-rc.14",
+  "license": "EUPL-1.2"
+}

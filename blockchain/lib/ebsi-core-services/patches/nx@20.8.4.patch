@@ -1,0 +1,16 @@
+diff --git a/src/tasks-runner/task-env.js b/src/tasks-runner/task-env.js
+index 8a1c701467d2d2219b4923f5119fc682e55eb1b0..be0cc8ca6b41f91e86898fdaf396c81a98c2355d 100644
+--- a/src/tasks-runner/task-env.js
++++ b/src/tasks-runner/task-env.js
+@@ -20,10 +20,7 @@ function getEnvVariablesForBatchProcess(skipNxCache, captureStderr) {
+ function getTaskSpecificEnv(task) {
+     // Unload any dot env files at the root of the workspace that were loaded on init of Nx.
+     const taskEnv = unloadDotEnvFiles({ ...process.env });
+-    return process.env.NX_LOAD_DOT_ENV_FILES === 'true'
+-        ? loadDotEnvFilesForTask(task, taskEnv)
+-        : // If not loading dot env files, ensure env vars created by system are still loaded
+-            taskEnv;
++    return taskEnv;
+ }
+ function getEnvVariablesForTask(task, taskSpecificEnv, forceColor, skipNxCache, captureStderr, outputPath, streamOutput) {
+     const res = {

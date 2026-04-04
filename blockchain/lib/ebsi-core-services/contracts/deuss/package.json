@@ -1,0 +1,75 @@
+{
+  "name": "@ebsiint-sc/deuss",
+  "version": "1.0.0-rc.0",
+  "license": "EUPL-1.2",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "clean": "rimraf artifacts cache src dist",
+    "fork": "hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/GVQRQezmyi7tO268bhIl5CSo6lM9ubfp --fork-block-number 11095000",
+    "build": "pnpm run compile",
+    "compile": "hardhat compile && pnpm exec tsc --project tsconfig.build.json && copyfiles -f src/types/hardhat.d.ts dist",
+    "coverage": "hardhat coverage --testfiles 'tests/*.ts'",
+    "lint": "pnpm run lint:prettier && pnpm run lint:eslint && pnpm run lint:tsc && pnpm run lint:sol",
+    "lint:sol": "solhint \"contracts/**/*.sol\"",
+    "lint:eslint": "eslint .",
+    "lint:tsc": "tsc --noEmit --incremental false",
+    "lint:prettier": "prettier . --check && pnpm exec prettier --list-different --plugin=prettier-plugin-solidity \"contracts/**/*.sol\"",
+    "lint:write": "prettier . --write && pnpm exec prettier --write --plugin=prettier-plugin-solidity \"contracts/**/*.sol\"",
+    "setup": "exit 0",
+    "test": "hardhat compile && hardhat test",
+    "test:unit": "pnpm run test",
+    "test:ci": "hardhat compile && hardhat test && pnpm run coverage"
+  },
+  "dependencies": {
+    "@ebsiint-sc/did-registry-v5": "workspace:*",
+    "@ebsiint-sc/trusted-contracts-registry-v1": "workspace:*",
+    "@openzeppelin/contracts": "5.4.0",
+    "@openzeppelin/contracts-upgradeable": "5.6.1",
+    "solady": "0.1.26"
+  },
+  "devDependencies": {
+    "@gnosis-guild/typechain-ethers-v6": "0.5.5",
+    "@gnosis-guild/typechain-hardhat": "9.2.2",
+    "@nomicfoundation/hardhat-chai-matchers": "2.1.0",
+    "@nomicfoundation/hardhat-ethers": "3.1.0",
+    "@nomiclabs/hardhat-solhint": "4.1.2",
+    "@types/chai": "4.3.20",
+    "@types/mocha": "10.0.10",
+    "@types/node": "24.12.0",
+    "chai": "4.5.0",
+    "ethers": "6.16.0",
+    "hardhat": "2.26.1",
+    "hardhat-abi-exporter": "2.11.0",
+    "hardhat-deploy": "0.14.0",
+    "solidity-coverage": "0.8.17",
+    "typechain": "8.3.2"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/artifacts",
+          "{projectRoot}/dist",
+          "{projectRoot}/src"
+        ]
+      },
+      "lint": {
+        "dependsOn": [
+          "build"
+        ]
+      },
+      "test:unit": {
+        "dependsOn": [
+          "build"
+        ]
+      },
+      "test:ci": {
+        "dependsOn": [
+          "build"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,78 @@
+# In order to run Trivy on the Docker image, you must first build it.
+# Run the following command from the root folder (replace "111" with any version):
+#
+# ```sh
+# $ APP_VERSION=111 docker compose build base
+# ```
+#
+# Then, run Trivy on the newly built image:
+#
+# ```sh
+# $ trivy image --ignorefile .trivyignore.yaml 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/core-services:111
+# ```
+
+vulnerabilities:
+  # elliptic@6.6.1 (LOW)
+  - id: CVE-2025-14505
+    paths:
+      - app/node_modules/.pnpm/elliptic@6.6.1/node_modules/elliptic/package.json
+    statement: No fix available
+
+  # hardhat@2.26.1>@sentry/node@5.30.0>cookie@0.4.2 (LOW)
+  - id: CVE-2024-47764
+    paths:
+      - app/node_modules/.pnpm/cookie@0.4.2/node_modules/cookie/package.json
+    statement: Not applicable, @ebsiint-subgraph/subgraphs-deployer is not a web server
+
+  # (hardhat@2.26.1|solidity-coverage@0.8.17)>mocha@10.8.2>serialize-javascript@6.0.2 (HIGH)
+  - id: GHSA-5c6j-r48x-rmvq
+    paths:
+      - app/node_modules/.pnpm/serialize-javascript@6.0.2/node_modules/serialize-javascript/package.json
+    statement: No fix applicable without a major version bump
+
+  # (hardhat@2.26.1|solidity-coverage@0.8.17)>mocha@10.8.2>serialize-javascript@6.0.2 (MEDIUM)
+  - id: CVE-2026-34043
+    paths:
+      - app/node_modules/.pnpm/serialize-javascript@6.0.2/node_modules/serialize-javascript/package.json
+    statement: No fix applicable without a major version bump
+
+  # hardhat@2.26.1>undici@5.29.0 (MEDIUM)
+  - id: CVE-2026-22036
+    paths:
+      - app/node_modules/.pnpm/undici@5.29.0/node_modules/undici/package.json
+    statement: No fix applicable without a major version bump
+
+  # hardhat@2.26.1>undici@5.29.0 (HIGH)
+  - id: CVE-2026-1526
+    paths:
+      - app/node_modules/.pnpm/undici@5.29.0/node_modules/undici/package.json
+    statement: No fix applicable without a major version bump
+
+  # hardhat@2.26.1>undici@5.29.0 (HIGH)
+  - id: CVE-2026-2229
+    paths:
+      - app/node_modules/.pnpm/undici@5.29.0/node_modules/undici/package.json
+    statement: No fix applicable without a major version bump
+
+  # hardhat@2.26.1>undici@5.29.0 (MEDIUM)
+  - id: CVE-2026-1525
+    paths:
+      - app/node_modules/.pnpm/undici@5.29.0/node_modules/undici/package.json
+    statement: No fix applicable without a major version bump
+
+  # hardhat@2.26.1>undici@5.29.0 (MEDIUM)
+  - id: CVE-2026-1527
+    paths:
+      - app/node_modules/.pnpm/undici@5.29.0/node_modules/undici/package.json
+    statement: No fix applicable without a major version bump
+
+  # hardhat@2.26.1>@nomicfoundation/solidity-analyzer@0.1.2>atty@0.2.14 (LOW)
+  - id: GHSA-g98v-hv3f-hcfr
+    paths:
+      - app/node_modules/.pnpm/@nomicfoundation+solidity-analyzer@0.1.2/node_modules/@nomicfoundation/solidity-analyzer/Cargo.lock
+    statement:
+
+secrets:
+  - id: jwt-token
+    paths:
+      - /app/apis/*/api/openapi.yaml

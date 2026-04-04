@@ -1,0 +1,7 @@
+{
+  "name": "@ebsiint-sc/trusted-apps-registry-v3",
+  "version": "3.0.0-rc.4",
+  "license": "EUPL-1.2",
+  "private": true,
+  "description": "Trusted Apps Registry"
+}

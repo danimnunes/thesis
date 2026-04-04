@@ -1,0 +1,6 @@
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
+@ebsi/timestamp/=lib/ebsi-core-services/contracts/timestamp-v4/contracts/timestamp/
+@ebsi/did/=lib/ebsi-core-services/contracts/did-registry-v5/contracts/did-registry/
+@ebsiint-sc/bootstrap-v2/=lib/ebsi-core-services/contracts/bootstrap-v2/
+@ebsiint-sc/trusted-policies-registry-v3/=lib/ebsi-core-services/contracts/trusted-policies-registry-v3/
+forge-std/=lib/forge-std/src/

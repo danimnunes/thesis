@@ -1,0 +1,1 @@
+gitleaks git --staged --verbose --no-banner && pnpm run lint-staged

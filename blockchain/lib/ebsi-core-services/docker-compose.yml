@@ -1,0 +1,128 @@
+name: core-services
+
+services:
+  base:
+    build:
+      context: .
+    image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/core-services:${APP_VERSION:?missing version}
+    labels:
+      trivyignore: .trivyignore.yaml
+
+  authorisation-api-v4:
+    build:
+      context: apis/authorisation-v4
+      additional_contexts:
+        core-services-base: "service:base"
+      args:
+        DOCKER_TAG: ${APP_VERSION:?missing version}
+    image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/authorisation-api-v4:${APP_VERSION:?missing version}
+    labels:
+      trivyignore: apis/authorisation-v4/.trivyignore.yaml
+
+  did-registry-api-v5:
+    build:
+      context: apis/did-registry-v5
+      additional_contexts:
+        core-services-base: "service:base"
+      args:
+        DOCKER_TAG: ${APP_VERSION:?missing version}
+    image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/did-registry-api-v5:${APP_VERSION:?missing version}
+    labels:
+      trivyignore: apis/did-registry-v5/.trivyignore.yaml
+
+  estat-api-v1:
+    build:
+      context: apis/estat
+      additional_contexts:
+        core-services-base: "service:base"
+      args:
+        DOCKER_TAG: ${APP_VERSION:?missing version}
+    image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/estat-api-v1:${APP_VERSION:?missing version}
+    labels:
+      trivyignore: apis/estat/.trivyignore.yaml
+
+  ledger-api-v4:
+    build:
+      context: apis/ledger-v4
+      additional_contexts:
+        core-services-base: "service:base"
+      args:
+        DOCKER_TAG: ${APP_VERSION:?missing version}
+    image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/ledger-api-v4:${APP_VERSION:?missing version}
+    labels:
+      trivyignore: apis/ledger-v4/.trivyignore.yaml
+
+  timestamp-api-v4:
+    build:
+      context: apis/timestamp-v4
+      additional_contexts:
+        core-services-base: "service:base"
+      args:
+        DOCKER_TAG: ${APP_VERSION:?missing version}
+    image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/timestamp-api-v4:${APP_VERSION:?missing version}
+    labels:
+      trivyignore: apis/timestamp-v4/.trivyignore.yaml
+
+  track-and-trace-api-v1:
+    build:
+      context: apis/track-and-trace-v1
+      additional_contexts:
+        core-services-base: "service:base"
+      args:
+        DOCKER_TAG: ${APP_VERSION:?missing version}
+    image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/track-and-trace-api-v1:${APP_VERSION:?missing version}
+    labels:
+      trivyignore: apis/track-and-trace-v1/.trivyignore.yaml
+
+  trusted-contracts-registry-api-v1:
+    build:
+      context: apis/trusted-contracts-registry-v1
+      additional_contexts:
+        core-services-base: "service:base"
+      args:
+        DOCKER_TAG: ${APP_VERSION:?missing version}
+    image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/trusted-contracts-registry-api-v1:${APP_VERSION:?missing version}
+    labels:
+      trivyignore: apis/trusted-contracts-registry-v1/.trivyignore.yaml
+
+  trusted-issuers-registry-api-v5:
+    build:
+      context: apis/trusted-issuers-registry-v5
+      additional_contexts:
+        core-services-base: "service:base"
+      args:
+        DOCKER_TAG: ${APP_VERSION:?missing version}
+    image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/trusted-issuers-registry-api-v5:${APP_VERSION:?missing version}
+    labels:
+      trivyignore: apis/trusted-issuers-registry-v5/.trivyignore.yaml
+
+  trusted-policies-registry-api-v3:
+    build:
+      context: apis/trusted-policies-registry-v3
+      additional_contexts:
+        core-services-base: "service:base"
+      args:
+        DOCKER_TAG: ${APP_VERSION:?missing version}
+    image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/trusted-policies-registry-api-v3:${APP_VERSION:?missing version}
+    labels:
+      trivyignore: apis/trusted-policies-registry-v3/.trivyignore.yaml
+
+  trusted-schemas-registry-api-v3:
+    build:
+      context: apis/trusted-schemas-registry-v3
+      additional_contexts:
+        core-services-base: "service:base"
+      args:
+        DOCKER_TAG: ${APP_VERSION:?missing version}
+    image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/trusted-schemas-registry-api-v3:${APP_VERSION:?missing version}
+    labels:
+      trivyignore: apis/trusted-schemas-registry-v3/.trivyignore.yaml
+
+  subgraphs-deployer:
+    build:
+      context: subgraphs/deployer
+      additional_contexts:
+        core-services-base: "service:base"
+    image: 305472350643.dkr.ecr.eu-central-1.amazonaws.com/ebsi/subgraphs-deployer:${APP_VERSION:?missing version}
+    labels:
+      trivyignore: subgraphs/deployer/.trivyignore.yaml

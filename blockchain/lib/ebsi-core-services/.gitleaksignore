@@ -1,0 +1,16 @@
+apis/authorisation-v4/.env.test:generic-api-key:6
+apis/authorisation-v4/api/openapi.yaml:jwt:822
+apis/authorisation-v4/api/openapi.yaml:jwt:945
+apis/trusted-issuers-registry-v5/tests/e2e/app.e2e-spec.ts:jwt:212
+apis/trusted-issuers-registry-v5/api/openapi.yaml:jwt:161
+apis/trusted-issuers-registry-v5/api/openapi.yaml:jwt:336
+apis/trusted-issuers-registry-v5/api/openapi.yaml:jwt:476
+apis/trusted-issuers-registry-v5/api/openapi.yaml:jwt:486
+apis/trusted-issuers-registry-v5/api/openapi.yaml:jwt:575
+apis/trusted-issuers-registry-v5/api/openapi.yaml:jwt:818
+apis/trusted-issuers-registry-v5/src/modules/jsonrpc/jsonrpc.module.spec.ts:generic-api-key:1035
+apis/trusted-issuers-registry-v5/src/modules/jsonrpc/jsonrpc.module.spec.ts:generic-api-key:1147
+apis/trusted-issuers-registry-v5/src/modules/jsonrpc/jsonrpc.module.spec.ts:generic-api-key:1211
+apis/trusted-issuers-registry-v5/src/modules/jsonrpc/jsonrpc.module.spec.ts:generic-api-key:1336
+apis/trusted-issuers-registry-v5/src/modules/jsonrpc/jsonrpc.module.spec.ts:generic-api-key:1411
+apis/trusted-issuers-registry-v5/src/modules/jsonrpc/jsonrpc.module.spec.ts:generic-api-key:1497
