@@ -11,7 +11,9 @@ contract WELLRegistry {
     mapping(string => address) private _contracts;
     address public owner;
 
-    constructor() { owner = msg.sender; }
+    constructor() {
+        owner = msg.sender;
+    }
 
     function setContract(string calldata name, address addr) external {
         require(msg.sender == owner, "Only owner");

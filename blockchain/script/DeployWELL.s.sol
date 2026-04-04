@@ -5,13 +5,13 @@ import "forge-std/Script.sol";
 import {WELLRegistry} from "../src/WELLRegistry.sol";
 import {WELLIntegrity} from "../src/WELLIntegrity.sol";
 // Import the EBSI Timestamp contract from the lib folder
-import "@ebsi/timestamp/Timestamp.sol"; 
+import "@ebsi/timestamp/Timestamp.sol";
 
 /*
  * @title DeployWELL
  * @notice A script to deploy the WELLRegistry, EBSI Timestamp, and WELLIntegrity contracts.
- * This script demonstrates the use of dependency injection by first deploying the EBSI Timestamp contract, 
- * then registering its address in the WELLRegistry, and finally deploying the WELLIntegrity contract that 
+ * This script demonstrates the use of dependency injection by first deploying the EBSI Timestamp contract,
+ * then registering its address in the WELLRegistry, and finally deploying the WELLIntegrity contract that
  * depends on the registry to access the EBSI Timestamp functionality.
  */
 
@@ -24,7 +24,7 @@ contract DeployWELL is Script {
         WELLRegistry registry = new WELLRegistry();
 
         // 2. Deploy the EBSI Timestamp contract and initialize it (using a dummy address for the constructor since it's not relevant for this example)
-        Timestamp ebsiTs = new Timestamp(address(1)); 
+        Timestamp ebsiTs = new Timestamp(address(1));
         ebsiTs.initialize(1);
 
         // 3. Inject the EBSI Timestamp contract address into the registry so that the WELLIntegrity contract can find it
