@@ -24,7 +24,7 @@ contract WELLIntegrity {
 
         // 2. Prepare the data for the timestamping call
         uint256[] memory algoIds = new uint256[](1);
-        algoIds[0] = 1; // Example hash algorithm ID (e.g., SHA-256)
+        algoIds[0] = 0; // Example hash algorithm ID (e.g., SHA-256)
 
         bytes[] memory hashValues = new bytes[](1);
         hashValues[0] = abi.encodePacked(ehrHash); // Convert the bytes32 hash to bytes for the EBSI Timestamp contract

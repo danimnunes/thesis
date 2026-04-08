@@ -4,3 +4,5 @@
 @ebsiint-sc/bootstrap-v2/=lib/ebsi-core-services/contracts/bootstrap-v2/
 @ebsiint-sc/trusted-policies-registry-v3/=lib/ebsi-core-services/contracts/trusted-policies-registry-v3/
 forge-std/=lib/forge-std/src/
+@ebsi/mock-policies/=lib/ebsi-core-services/contracts/did-registry-v5/contracts/mocks/
+forge-std/=lib/forge-std/src/
