@@ -55,8 +55,8 @@ def run_test():
     print(f"\n[2] Generated EHR Hash: {ehr_hash.hex()}")
 
     # STEP C: Invoke WELL system to anchor the data (Cross-contract call)
-    print(f"[3] Sending transaction to WELLIntegrity.anchorEHR()...")
-    tx_hash = integrity.functions.anchorEHR(ehr_hash).transact()
+    print(f"[3] Sending transaction to WELLIntegrity.anchorEhr()...")
+    tx_hash = integrity.functions.anchorEhr(ehr_hash).transact()
     
     print("    Waiting for blockchain confirmation...")
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash)

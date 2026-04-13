@@ -1,8 +1,13 @@
 @openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
 @ebsi/timestamp/=lib/ebsi-core-services/contracts/timestamp-v4/contracts/timestamp/
 @ebsi/did/=lib/ebsi-core-services/contracts/did-registry-v5/contracts/did-registry/
+@ebsi/tir/=lib/ebsi-core-services/contracts/trusted-issuers-registry-v5/contracts/tir/
+@ebsi/mock-policies/=lib/ebsi-core-services/contracts/did-registry-v5/contracts/mocks/
+
+@ebsiint-sc/did-registry-v5/=lib/ebsi-core-services/contracts/did-registry-v5/
+@ebsiint-sc/trusted-issuers-registry-v5/=lib/ebsi-core-services/contracts/trusted-issuers-registry-v5/
 @ebsiint-sc/bootstrap-v2/=lib/ebsi-core-services/contracts/bootstrap-v2/
 @ebsiint-sc/trusted-policies-registry-v3/=lib/ebsi-core-services/contracts/trusted-policies-registry-v3/
-forge-std/=lib/forge-std/src/
-@ebsi/mock-policies/=lib/ebsi-core-services/contracts/did-registry-v5/contracts/mocks/
+
+
 forge-std/=lib/forge-std/src/
