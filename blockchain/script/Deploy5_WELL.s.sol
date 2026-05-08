@@ -14,7 +14,7 @@ contract Deploy5_WELL is Script {
         WELLIntegrity well = new WELLIntegrity(registryAddr);
 
         console.log("WELL_INTEGRITY_ADDR=", address(well));
-        console.log("PROTOTYPE READY FOR SEPOLIA");
+        console.log("PROTOTYPE READY");
 
         vm.stopBroadcast();
     }
