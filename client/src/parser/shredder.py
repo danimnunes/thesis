@@ -1,13 +1,31 @@
 import fhirpathpy
 
-class FHIRParser:
+class FHIRShredder:
     def __init__(self):
-        # Compile the FHIRPath expression once for efficiency
-        self.family_name_path = fhirpathpy.compile(
-            "Bundle.entry.resource.where(resourceType='Patient').name.family"
-        )
+        # Mapping of fields to FHIRPath expressions for extraction
+        self.schema_map = {
+            "sse": {
+                "patient_id": "Bundle.entry.resource.where(resourceType='Patient').identifier.value",
+                "last_name": "Bundle.entry.resource.where(resourceType='Patient').name.family",
+                "diagnosis": "Bundle.entry.resource.where(resourceType='Condition').code.coding.display"
+            },
+            "phe": {
+                "medical_costs": "Bundle.entry.resource.where(resourceType='Claim').total.value", # costs of treatments
+                "vitals": "Bundle.entry.resource.where(resourceType='Observation').valueQuantity.value" # e.g., heart rate, blood pressure
+            }
+        }
 
-    def extract_family_name(self, bundle):
-        result = self.family_name_path(bundle)
-        # Return the first family name found, or None if not found
-        return result[0] if result else None
+    def shred(self, bundle):
+        extracted = {"sse": {}, "phe": {}}
+        
+        # SSE extraction
+        for key, path in self.schema_map["sse"].items():
+            res = fhirpathpy.evaluate(bundle, path)
+            if res: extracted["sse"][key] = res 
+
+        # PHE extraction
+        for key, path in self.schema_map["phe"].items():
+            res = fhirpathpy.evaluate(bundle, path)
+            if res: extracted["phe"][key] = [float(v) for v in res if v is not None]
+
+        return extracted

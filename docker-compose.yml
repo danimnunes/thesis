@@ -1,23 +1,33 @@
 services:
-  # Cloud Provider 1 (postgres)
+  vault:
+    image: hashicorp/vault:latest
+    container_name: well_kms
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "${VAULT_ROOT_TOKEN}"
+      VAULT_ADDR: "http://0.0.0.0:8200"
+    cap_add:
+      - IPC_LOCK
+
   postgres_provider:
     image: postgres:latest
+    container_name: well_postgres
     environment:
       POSTGRES_DB: well_repo_a
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
     ports:
       - "5432:5432"
 
-  # Cloud Provider 2 (mysql)
   mysql_provider:
     image: mysql:latest
+    container_name: well_mysql
     environment:
       MYSQL_DATABASE: well_repo_b
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
     ports:
       - "3306:3306"
 
-  # Blockchain local (Foundry Anvil)
   blockchain_node:
     image: ghcr.io/foundry-rs/foundry:latest
     platform: linux/amd64
@@ -25,13 +35,70 @@ services:
       - "8545:8545"
     entrypoint: ["anvil", "--host", "0.0.0.0"]
 
-  # (Client)
+  minio:
+    image: minio/minio:latest
+    container_name: well_cloud_provider
+    ports:
+      - "9000:9000" 
+      - "9001:9001" 
+    environment:
+      MINIO_ROOT_USER: "${MINIO_ADMIN}"
+      MINIO_ROOT_PASSWORD: "${MINIO_PASSWORD}"
+    command: server /data --console-address ":9001"
+
+  create_buckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc config host add myminio http://well_cloud_provider:9000 ${MINIO_ADMIN} ${MINIO_PASSWORD}) do echo 'Waiting for MinIO...' && sleep 1; done;
+      /usr/bin/mc mb myminio/health-data;
+      exit 0;
+      "
+  
+  depspace:
+    build: 
+      context: ./RockFS/DepSpacito 
+    container_name: well_depspace
+    volumes:
+      - ./RockFS/config:/usr/src/depspacito/config
+    command: mvn exec:java -Dexec.mainClass="depspace.server.DepSpaceServer" -Dexec.args="0 config"
+  
+  rockfs:
+    build: ./RockFS
+    container_name: well_rockfs
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse
+    volumes:
+      - ./RockFS/config:/usr/src/safecloudfs/config
+      - ./rockfs_mnt:/mnt/rockfs
+    command: sh run.sh /mnt/rockfs
+    depends_on:
+      depspace:
+        condition: service_started
+      minio:
+        condition: service_started
+        
   data_client:
     build: ./client
+    container_name: well_client
     volumes:
       - ./client:/app
       - ./synthea_data:/data
+      - ./blockchain:/blockchain
+      - ./rockfs_mnt:/mnt/rockfs 
+    environment:
+      - VAULT_TOKEN=${VAULT_ROOT_TOKEN}
+      - VAULT_URL=http://well_kms:8200
+      - DB_PASSWORD=${DB_PASSWORD}
+      - PYTHONPATH=/app/src
     depends_on:
+      - vault
       - postgres_provider
       - mysql_provider
       - blockchain_node
+      - rockfs

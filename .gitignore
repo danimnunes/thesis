@@ -13,3 +13,10 @@ synthea_data/
 
 # Misc
 .DS_Store
+
+# RockFS
+RockFS/
+rockfs_mnt/
+
+# env
+.env
