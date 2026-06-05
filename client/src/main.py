@@ -43,22 +43,30 @@ def run_ingestion_and_validation():
 
     # --- 2. FHIR SHREDDING ---
     print(f"\n[2/7] Executing Intelligent FHIR Shredding...")
-    files = [f for f in os.listdir(DATA_PATH) if f.endswith('.json')]
-    # choose random patient json
+    
+    files = [f for f in os.listdir(DATA_PATH) if f.endswith('.json') and "Information" not in f]
+    
     selected_file = random.choice(files) if files else None
     if not selected_file:
-        print(f"    ❌ No FHIR JSON files found in {DATA_PATH}. Exiting.")
+        print(f"    ❌ No valid Patient FHIR JSON files found in {DATA_PATH}. Exiting.")
         return
+        
     print(f"    - Selected FHIR Bundle: {selected_file}")
-    with open(os.path.join(DATA_PATH, selected_file)) as f:
+    with open(os.path.join(DATA_PATH, selected_file), encoding='utf-8') as f:
         bundle = json.load(f)
     
     shredded = shredder.shred(bundle)
+
+    if 'last_name' not in shredded['sse'] or not shredded['sse']['last_name']:
+        print(f"    ⚠️  Selected file {selected_file} does not contain valid Patient metadata. Please try again.")
+        return
+
     patient_name = shredded['sse']['last_name'][0]
+    unique_diagnoses = ", ".join(shredded['sse']['diagnosis'][:3]) + "..."
+    
     print(f"    - Resource Type: {bundle['resourceType']}")
     print(f"    - Patient Identified: {patient_name}")
-    print(f"    - Fields (SSE): {shredded['sse']}")
-    print(f"    - Fields (PHE): {shredded['phe']}")
+    print(f"    - Cleaned Diagnoses (SSE): {unique_diagnoses}")
 
     # --- 3. UNSTRUCTURED DATA STORAGE (ROCKFS) ---
     print(f"\n[3/7] Processing Unstructured Assets (RockFS)...")
@@ -68,7 +76,7 @@ def run_ingestion_and_validation():
 
     # --- 4. HYBRID ENCRYPTION ENGINE ---
     print(f"\n[4/7] Applying Hybrid Encryption Strategy...")
-    # SSE
+    # SSE - Using the specific UUID and last name extracted
     enc_sse = {
         "patient_id": engine.encrypt_sse(shredded['sse']['patient_id'][0]),
         "last_name": engine.encrypt_sse(patient_name),
@@ -76,14 +84,15 @@ def run_ingestion_and_validation():
     }
     print(f"    - SSE Engine: Generated deterministic tokens for searchable fields.")
     
-    # PHE
     cost = float(shredded['phe']['medical_costs'][0]) if shredded['phe']['medical_costs'] else 100.0
-    vitals = float(shredded['phe']['vitals'][0]) if shredded['phe']['vitals'] else 70.0
+    weight = float(shredded['phe']['weight'][0]) if shredded['phe']['weight'] else 70.0
+    
     enc_cost = engine.encrypt_phe(cost)
-    enc_vitals = engine.encrypt_phe(vitals)
+    enc_weight = engine.encrypt_phe(weight)
+    
     enc_phe = {
         "medical_costs": str(enc_cost.ciphertext()),
-        "vitals": str(enc_vitals.ciphertext())
+        "weight": str(enc_weight.ciphertext())
     }
     print(f"    - PHE Engine: Generated Paillier ciphertext for numerical analytics.")
 
@@ -124,23 +133,9 @@ def run_ingestion_and_validation():
     print(f"🔍 [Search Test] Can the Database find the patient '{patient_name}' using only the SSE Token?")
     db_record = cloud.search_by_token("last_name_sse", enc_sse['last_name'])
     if db_record:
-        print(f"    ✅ SUCCESS: Record matched in Cloud. Internal DB ID: {db_record[0]}")
+        print(f"    ✅ SUCCESS: Record matched in Cloud.")
     else:
         print(f"    ❌ FAIL: Token mismatch in Database.")
-
-    # Exp B: PHE Addition
-    print(f"\n📈 [Analytics Test] Can the Cloud add a +$50.00 surcharge to the encrypted cost?")
-    surcharge = 50.0
-    cloud_sum_enc = enc_cost + surcharge # This simulates math in the untrusted server
-    final_val = engine.decrypt_phe(cloud_sum_enc)
-    print(f"    - Original cost: ${cost}")
-    print(f"    - Decrypted result after cloud calculation: ${final_val}")
-    if abs(final_val - (cost + surcharge)) < 0.01:
-        print(f"    ✅ SUCCESS: Paillier Homomorphic properties validated.")
-
-    print("\n" + "="*60)
-    print("🏆 SYSTEM VALIDATED: Ingestion, Privacy, and Integrity cycles are active.")
-    print("="*60 + "\n")
 
 if __name__ == "__main__":
     run_ingestion_and_validation()

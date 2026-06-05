@@ -16,7 +16,7 @@ def setup_db():
             last_name_sse TEXT,       
             diagnosis_sse TEXT,       
             medical_costs_phe TEXT,   
-            vitals_phe TEXT,          
+            weight_phe TEXT,          
             rockfs_blob_id TEXT,      
             encrypted_payload BYTEA,  
             blockchain_tx_hash TEXT,  

@@ -17,14 +17,14 @@ class CloudManager:
     def _write_to_db(self, conn, sse, phe, blob_id, payload, tx):
         cur = conn.cursor()
         query = """INSERT INTO ehr_records 
-                   (patient_id_sse, last_name_sse, diagnosis_sse, medical_costs_phe, vitals_phe, rockfs_blob_id, encrypted_payload, blockchain_tx_hash) 
+                   (patient_id_sse, last_name_sse, diagnosis_sse, medical_costs_phe, weight_phe, rockfs_blob_id, encrypted_payload, blockchain_tx_hash) 
                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
         cur.execute(query, (
             sse.get('patient_id', 'None'), 
             sse.get('last_name', 'None'), 
             sse.get('diagnosis', 'None'), 
             phe.get('medical_costs', '0'),
-            phe.get('vitals', '0'),
+            phe.get('weight', '0'),
             blob_id,
             payload, 
             tx
