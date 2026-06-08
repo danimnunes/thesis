@@ -30,6 +30,8 @@ contract Deploy3_TIR is Script {
         bytes32 rootAttrId = bytes32(uint256(100));
         bytes32 hospAttrId = bytes32(uint256(1)); 
 
+        bytes32 hospAttrIdLong = bytes32(uint256(2));
+
         // first we need to create the RootTAO (Type 1) that represents a trusted authority (e.g., EBSI Root Authority)
         IEBSITrustedIssuers(address(proxy)).setAttributeMetadata(
             "did:ebsi:root-authority", 
@@ -43,6 +45,14 @@ contract Deploy3_TIR is Script {
         IEBSITrustedIssuers(address(proxy)).setAttributeMetadata(
             "did:ebsi:hospital-test", 
             hospAttrId,
+            3,                         
+            "did:ebsi:root-authority", 
+            rootAttrId                
+        );
+
+        IEBSITrustedIssuers(address(proxy)).setAttributeMetadata(
+            "did:ebsi:hospital-long-identifier-for-economic-scalability-testing", 
+            hospAttrIdLong,
             3,                         
             "did:ebsi:root-authority", 
             rootAttrId                

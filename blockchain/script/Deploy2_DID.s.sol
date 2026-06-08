@@ -28,6 +28,10 @@ contract Deploy2_DID is Script {
         );
 
         DidRegistry(address(proxy)).insertDidDocument(
+            "did:ebsi:hospital-long-identifier-for-economic-scalability-testing", "{}", "key-1", new bytes(64), true, block.timestamp, block.timestamp + 365 days
+        );
+
+        DidRegistry(address(proxy)).insertDidDocument(
             "did:ebsi:root-authority", "{}", "key-1", new bytes(64), true, block.timestamp, block.timestamp + 365 days
         );
         
