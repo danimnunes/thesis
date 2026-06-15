@@ -34,12 +34,32 @@ class CloudManager:
         conn.close()
         
     def search_by_token(self, column_name, token):
-        """Performs a secure search on the encrypted database using an SSE token."""
-        conn = psycopg2.connect(**self.pg_config)
-        cur = conn.cursor()
-        query = f"SELECT id, blockchain_tx_hash FROM ehr_records WHERE {column_name} = %s"
-        cur.execute(query, (token,))
-        result = cur.fetchone()
-        cur.close()
-        conn.close()
-        return result
+        results = []
+        
+        # Try to search in Provider A (PostgreSQL)
+        try:
+            conn = psycopg2.connect(**self.pg_config)
+            cur = conn.cursor()
+            cur.execute(f"SELECT id, blockchain_tx_hash, created_at FROM ehr_records WHERE {column_name} = %s", (token,))
+            results.append(cur.fetchone())
+            conn.close()
+        except:
+            print("⚠️ Provider A unreachable, trying Provider B...")
+
+        # Try to search in Provider B (MySQL)
+        try:
+            conn = mysql.connector.connect(**self.my_config)
+            cur = conn.cursor()
+            cur.execute(f"SELECT id, blockchain_tx_hash, created_at FROM ehr_records WHERE {column_name} = %s", (token,))
+            results.append(cur.fetchone())
+            conn.close()
+        except:
+            print("⚠️ Provider B unreachable...")
+
+        # Quorum simulation 
+        if not results or all(r is None for r in results):
+            return None
+        
+        # Returns the record with the most recent timestamp (index 2) among valid results
+        valid_results = [r for r in results if r is not None]
+        return max(valid_results, key=lambda x: x[2])
