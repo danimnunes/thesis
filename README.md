@@ -20,13 +20,12 @@ thesis/
 │   ├── lib/             # EBSI Core Services (v4/v5) via Git Submodules
 │   ├── script/          # 5-Stage Orchestrated Deployment Scripts
 │   └── src/             # WELL Core Logic & Registry
-├── client/              # Python Data Client (Dockerized)
-│   ├── src/
-│   │   ├── crypto/      # KMS (Vault), SSE, and PHE Engines
-│   │   ├── database/    # Multi-cloud Manager (Postgres/MySQL) & RockFS Client
-│   │   └── parser/      # FHIR Shredder using FHIRPath
-│   └── tests/           # Integration & Performance Tests
-└── synthea_data/        # Synthetic HL7 FHIR Patient Bundles
+ ── client/              # Python Data Client (Dockerized)
+    ├── src/
+    │   ├── crypto/      # KMS (Vault), SSE, and PHE Engines
+    │   ├── database/    # Multi-cloud Manager (Postgres/MySQL) & RockFS Client
+    │   └── parser/      # FHIR Shredder using FHIRPath
+    └── tests/           # Integration & Performance Tests
 ```
 
 ---
