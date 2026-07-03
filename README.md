@@ -26,7 +26,6 @@ thesis/
 │   │   ├── database/    # Multi-cloud Manager (Postgres/MySQL) & RockFS Client
 │   │   └── parser/      # FHIR Shredder using FHIRPath
 │   └── tests/           # Integration & Performance Tests
-├── RockFS/              # Distributed File System for Unstructured Data
 └── synthea_data/        # Synthetic HL7 FHIR Patient Bundles
 ```
 
